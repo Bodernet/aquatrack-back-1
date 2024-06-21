@@ -4,6 +4,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import authRouter from "./routes/authRouter.js";
+import usersRouter from "./routes/usersRouter.js";
 import waterRouter from "./routes/waterRouter.js";
 import "./db/db.js";
 import authMiddleware from "./middlewares/auth.js";
@@ -14,7 +15,9 @@ app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
 app.use("/avatars", express.static(path.resolve("public/avatars")));
-app.use("/api/users", authRouter);
+
+app.use("/api/auth", authRouter);
+app.use("/api/users", usersRouter);
 app.use("/api/water", authMiddleware, waterRouter);
 
 app.use((_, res) => {
