@@ -5,10 +5,9 @@ const transport = nodemailer.createTransport({
   host: "smtp.ukr.net",
   port: 465,
   auth: {
-    // user: process.env.MAILTRAP_USERNAME,
-    // pass: process.env.MAILTRAP_PASSWORD,
-    user: "bodernet555@ukr.net",
-    pass: "Asr3KAoce3ZT6UnK",
+    user: process.env.MAILTRAP_USERNAME,
+    pass: process.env.MAILTRAP_PASSWORD,
+
   },
   tls: {
     rejectUnauthorized: false,
