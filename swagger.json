@@ -1,0 +1,410 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "version": "1.0.0",
+    "title": "AquaTrack",
+    "description": "The API for GoIT project - AquaTrack. Team 1",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "servers": [
+    { "url": "http://localhost:3000" },
+    { "url": "aquatrackproject-team-1.wuaze.com" }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "Authorization endpoints"
+    },
+    {
+      "name": "Water",
+      "description": "Water endpoints"
+    }
+  ],
+  "paths": {
+    "/users/register": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "User sign up",
+        "requestBody": {
+          "description": "Signup's object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful sign up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUpResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid request body)"
+          },
+          "404": {
+            "description": "Service not found"
+          },
+          "409": {
+            "description": "Such email already exists"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "User sign in",
+        "requestBody": {
+          "description": "Signin's object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful sign in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignInResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid request body)"
+          },
+          "401": {
+            "description": "Email or password invalid"
+          },
+          "404": {
+            "description": "Service not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/users/current": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Current user",
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Successful get current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCurrentResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Service not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/users/current/refresh": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Refresh user's token",
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Successful refresh current user's token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRefreshCurrentResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Service not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/users/logout": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Logout user",
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Successful log out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Service not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/users": {
+      "patch": {
+        "tags": ["Users"],
+        "summary": "Update user",
+        "security": [{ "Bearer": [] }],
+        "requestBody": {
+          "description": "Signin's object",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful update",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Service not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SignUpRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "$ref": "#/components/examples/users/email"
+          },
+          "password": {
+            "$ref": "#/components/examples/users/password"
+          },
+          "repeatPassword": {
+            "$ref": "#/components/examples/users/repeatPassword"
+          }
+        }
+      },
+      "SignUpResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "$ref": "#/components/examples/users/email"
+            },
+            "userId": {
+              "$ref": "#/components/examples/users/userId"
+            }
+          }
+        },
+        "example": [{ "email": "1@gmail.com", "userId": "1" }]
+      },
+      "SignInRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "$ref": "#/components/examples/users/email"
+          },
+          "password": {
+            "$ref": "#/components/examples/users/password"
+          }
+        }
+      },
+      "SignInResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "$ref": "#/components/examples/users/email"
+            },
+            "token": {
+              "$ref": "#/components/examples/users/token"
+            }
+          }
+        }
+      },
+      "GetCurrentResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "$ref": "#/components/examples/users/userId"
+            },
+            "name": {
+              "$ref": "#/components/examples/users/name"
+            },
+            "email": {
+              "$ref": "#/components/examples/users/email"
+            },
+            "token": {
+              "$ref": "#/components/examples/users/token"
+            }
+          }
+        }
+      },
+      "GetRefreshCurrentResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "$ref": "#/components/examples/users/token"
+            },
+            "refreshToken": {
+              "$ref": "#/components/examples/users/refreshToken"
+            }
+          }
+        }
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "$ref": "#/components/examples/users/message"
+          }
+        }
+      },
+      "UpdateRequest": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "$ref": "#/components/examples/users/userId"
+            }
+          }
+        }
+      },
+      "UpdateResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "$ref": "#/components/examples/users/userId"
+            }
+          }
+        }
+      }
+    },
+    "examples": {
+      "users": {
+        "email": {
+          "type": "string",
+          "description": "User's email",
+          "format": "email"
+        },
+        "password": {
+          "type": "string",
+          "description": "User's password",
+          "example": "qwerty123"
+        },
+        "repeatPassword": {
+          "type": "string",
+          "description": "User's password",
+          "example": "qwerty123"
+        },
+        "token": {
+          "type": "string",
+          "description": "User's token",
+          "example": "Abcd1234"
+        },
+        "refreshToken": {
+          "type": "string",
+          "description": "User's token",
+          "example": "Abcd1234"
+        },
+        "userId": {
+          "type": "string",
+          "description": "User's id",
+          "example": "64b1e25f6b0a2ccb95591ec7"
+        },
+        "name": {
+          "type": "string",
+          "description": "User's name",
+          "example": "Devid"
+        },
+        "message": {
+          "type": "string",
+          "description": "Sign out success",
+          "example": "Sign out success"
+        }
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

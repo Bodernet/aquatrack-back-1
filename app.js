@@ -3,10 +3,12 @@ import path from "node:path";
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import authRouter from "./routes/authRouter.js";
+import { authRouter } from "./routes/authRouter.js";
 import waterRouter from "./routes/waterRouter.js";
 import "./db/db.js";
 import authMiddleware from "./middlewares/auth.js";
+import swaggerUI from "swagger-ui-express";
+import swaggerDocument from "./swagger.json" assert { type: "json" };
 
 const app = express();
 
@@ -16,6 +18,7 @@ app.use(express.json());
 app.use("/avatars", express.static(path.resolve("public/avatars")));
 app.use("/api/users", authRouter);
 app.use("/api/water", authMiddleware, waterRouter);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
