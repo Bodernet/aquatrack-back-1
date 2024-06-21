@@ -8,6 +8,8 @@ import usersRouter from "./routes/usersRouter.js";
 import waterRouter from "./routes/waterRouter.js";
 import "./db/db.js";
 import authMiddleware from "./middlewares/auth.js";
+import swaggerUI from "swagger-ui-express";
+import swaggerDocument from "./swagger.json" assert { type: "json" };
 
 const app = express();
 
@@ -19,6 +21,7 @@ app.use("/avatars", express.static(path.resolve("public/avatars")));
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/water", authMiddleware, waterRouter);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
