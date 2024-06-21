@@ -7,7 +7,6 @@ const transport = nodemailer.createTransport({
   auth: {
     user: process.env.MAILTRAP_USERNAME,
     pass: process.env.MAILTRAP_PASSWORD,
-
   },
   tls: {
     rejectUnauthorized: false,

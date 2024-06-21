@@ -5,7 +5,6 @@ import morgan from "morgan";
 import cors from "cors";
 import authRouter from "./routes/authRouter.js";
 import usersRouter from "./routes/usersRouter.js";
-import authRouter from "./routes/authRouter.js";
 import waterRouter from "./routes/waterRouter.js";
 import "./db/db.js";
 import authMiddleware from "./middlewares/auth.js";
