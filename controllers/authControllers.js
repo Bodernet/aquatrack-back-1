@@ -17,10 +17,10 @@ export async function register(req, res, next) {
     const verificationToken = crypto.randomUUID();
     mail.sendMail({
       to: email,
-      from: "bodernet@meta.ua",
+      from: "bodernet555@ukr.net",
       subject: "Welcome to contact",
-      html: `To confirm you email please click on <a href="http://localhost:3000/api/users/verify/${verificationToken}">Link</a>`,
-      text: `To confirm you email please open the link http://localhost:3000/api/users/verify/${verificationToken}`,
+      html: `To confirm you email please click on <a href="http://localhost:3000/api/auth/verify/${verificationToken}">Link</a>`,
+      text: `To confirm you email please open the link http://localhost:3000/api/auth/verify/${verificationToken}`,
     });
     const postNewUser = await User.create({
       email,
@@ -32,7 +32,6 @@ export async function register(req, res, next) {
     res.status(201).json({
       user: {
         email: postNewUser.email,
-        subscription: postNewUser.subscription,
       },
     });
   } catch (error) {
@@ -61,13 +60,13 @@ export async function login(req, res, next) {
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: 3000 }
+      { expiresIn: 5000 }
     );
     await User.findByIdAndUpdate(user._id, { token }, { new: true });
 
     res.status(200).json({
       token: token,
-      user: { email: user.email, subscription: user.subscription },
+      user: { email: user.email },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -89,9 +88,7 @@ export async function current(req, res, next) {
     if (!user) {
       return res.status(401).send("Not authorized");
     }
-    res
-      .status(200)
-      .json({ email: user.email, subscription: user.subscription });
+    res.status(200).json({ email: user.email });
   } catch (error) {
     res.status(401).json("Not authorized");
   }
@@ -136,10 +133,10 @@ export async function resendVerificationEmail(req, res, next) {
 
     mail.sendMail({
       to: email,
-      from: "bodernet@meta.ua",
+      from: "bodernet555@ukr.net",
       subject: "Welcome to contact",
-      html: `To confirm you email please click on <a href="http://localhost:3000/api/users/verify/${verificationToken}">Link</a>`,
-      text: `To confirm you email please open the link http://localhost:3000/api/users/verify/${verificationToken}`,
+      html: `To confirm you email please click on <a href="http://localhost:3000/api/auth/verify/${verificationToken}">Link</a>`,
+      text: `To confirm you email please open the link http://localhost:3000/api/auth/verify/${verificationToken}`,
     });
 
     res.status(200).json({ message: "Verification email sent" });
