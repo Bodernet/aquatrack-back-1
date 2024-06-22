@@ -31,7 +31,7 @@ export async function register(req, res, next) {
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
-      subject: "Welcome to contact",
+      subject: "Welcome to Agua track",
       html: `To confirm you email please click on <a href="${verificationLink}">Link</a>`,
       text: `To confirm you email please open the link ${verificationLink}`,
     };
@@ -158,7 +158,7 @@ export async function resendVerificationEmail(req, res, next) {
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
-      subject: "Welcome to contact",
+      subject: "Welcome to Agua track",
       html: `To confirm you email please click on <a href="${verificationLink}">Link</a>`,
       text: `To confirm you email please open the link ${verificationLink}`,
     };
