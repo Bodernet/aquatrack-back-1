@@ -3,7 +3,9 @@ import crypto from "node:crypto";
 import { User } from "../schemas/usersSchemas.js";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
-import mail from "../mailtrap/mail.js";
+// import mail from "../mailtrap/mail.js";
+import sgMail from "@sendgrid/mail";
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 export async function register(req, res, next) {
   try {
@@ -15,13 +17,24 @@ export async function register(req, res, next) {
     const passwordHash = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
     const verificationToken = crypto.randomUUID();
-    mail.sendMail({
+
+    const msg = {
       to: email,
-      from: "bodernet555@ukr.net",
+      from: "aanytkaa@gmail.com",
       subject: "Welcome to contact",
-      html: `To confirm you email please click on <a href="http://localhost:3000/api/auth/verify/${verificationToken}">Link</a>`,
-      text: `To confirm you email please open the link http://localhost:3000/api/auth/verify/${verificationToken}`,
-    });
+      html: `To confirm you email please click on <a href="http://localhost:3000/api/users/verify/${verificationToken}">Link</a>`,
+      text: `To confirm you email please open the link http://localhost:3000/api/users/verify/${verificationToken}`,
+    };
+
+    sgMail
+      .send(msg)
+      .then(() => {
+        console.log("Email sent");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
     const postNewUser = await User.create({
       email,
       password: passwordHash,
@@ -133,10 +146,10 @@ export async function resendVerificationEmail(req, res, next) {
 
     mail.sendMail({
       to: email,
-      from: "bodernet555@ukr.net",
+      from: "aanytkaa@gmail.com",
       subject: "Welcome to contact",
-      html: `To confirm you email please click on <a href="http://localhost:3000/api/auth/verify/${verificationToken}">Link</a>`,
-      text: `To confirm you email please open the link http://localhost:3000/api/auth/verify/${verificationToken}`,
+      html: `To confirm you email please click on <a href="http://localhost:3000/api/users/verify/${verificationToken}">Link</a>`,
+      text: `To confirm you email please open the link http://localhost:3000/api/users/verify/${verificationToken}`,
     });
 
     res.status(200).json({ message: "Verification email sent" });
