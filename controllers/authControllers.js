@@ -107,7 +107,7 @@ export async function logout(req, res, next) {
 
 export async function current(req, res, next) {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).select("-password");
     if (!user) {
       return res.status(401).send("Not authorized");
     }
