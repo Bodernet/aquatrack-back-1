@@ -113,7 +113,6 @@ export async function current(req, res, next) {
     }
     res.status(200).json({ email: user.email });
   } catch (error) {
-    res.status(401).json("Not authorized");
     res.status(500).json({ message: "Server error" });
   }
 }
