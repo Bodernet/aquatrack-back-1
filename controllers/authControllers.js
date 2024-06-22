@@ -19,8 +19,8 @@ export async function register(req, res, next) {
       to: email,
       from: "bodernet555@ukr.net",
       subject: "Welcome to contact",
-      html: `To confirm you email please click on <a href="http://localhost:3000/api/auth/verify/${verificationToken}">Link</a>`,
-      text: `To confirm you email please open the link http://localhost:3000/api/auth/verify/${verificationToken}`,
+      html: `To confirm you email please click on <a href="https://aquatrack-back-1.onrender.com/api/auth/verify/${verificationToken}">Link</a>`,
+      text: `To confirm you email please open the link https://aquatrack-back-1.onrender.com/api/auth/verify/${verificationToken}`,
     });
     const postNewUser = await User.create({
       email,
