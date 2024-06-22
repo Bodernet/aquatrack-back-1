@@ -1,15 +1,24 @@
 import bcrypt from "bcrypt";
 import crypto from "node:crypto";
-import { User } from "../schemas/usersSchemas.js";
+import { User, registerSchema } from "../schemas/usersSchemas.js";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 // import mail from "../mailtrap/mail.js";
 import sgMail from "@sendgrid/mail";
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+const { BASE_URL } = process.env;
+
 export async function register(req, res, next) {
   try {
     const { password, email } = req.body;
+
+    if (password.length < 6 || password.length > 32) {
+      return res
+        .status(400)
+        .json({ message: "Password must be between 6 and 32 characters long" });
+    }
+
     const user = await User.findOne({ email });
     if (user !== null) {
       return res.status(409).send({ message: "User already registered" });
@@ -17,14 +26,15 @@ export async function register(req, res, next) {
     const passwordHash = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
     const verificationToken = crypto.randomUUID();
+    const verificationLink = `${BASE_URL}/api/users/verify/${verificationToken}`;
 
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
       subject: "Welcome to contact",
-      html: `To confirm you email please click on <a href="https://aquatrack-back-1.onrender.com/api/auth/verify/${verificationToken}">Link</a>`,
-      text: `To confirm you email please open the link https://aquatrack-back-1.onrender.com/api/auth/verify/${verificationToken}`,
-    });
+      html: `To confirm you email please click on <a href="${verificationLink}">Link</a>`,
+      text: `To confirm you email please open the link ${verificationLink}`,
+    };
 
     sgMail
       .send(msg)
@@ -34,7 +44,7 @@ export async function register(req, res, next) {
       .catch((error) => {
         console.error(error);
       });
-    
+
     const postNewUser = await User.create({
       email,
       password: passwordHash,
@@ -143,14 +153,23 @@ export async function resendVerificationEmail(req, res, next) {
 
     user.verificationToken = verificationToken;
     await user.save();
+    const verificationLink = `${BASE_URL}/api/users/verify/${verificationToken}`;
 
-    mail.sendMail({
+    const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
       subject: "Welcome to contact",
-      html: `To confirm you email please click on <a href="http://localhost:3000/api/users/verify/${verificationToken}">Link</a>`,
-      text: `To confirm you email please open the link http://localhost:3000/api/users/verify/${verificationToken}`,
-    });
+      html: `To confirm you email please click on <a href="${verificationLink}">Link</a>`,
+      text: `To confirm you email please open the link ${verificationLink}`,
+    };
+    sgMail
+      .send(msg)
+      .then(() => {
+        console.log("Email sent");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
 
     res.status(200).json({ message: "Verification email sent" });
   } catch (error) {
