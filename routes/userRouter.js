@@ -7,11 +7,7 @@ import {
   verifyEmail,
   resendVerificationEmail,
 } from "../controllers/authControllers.js";
-import {
-  updAvatar,
-  updDataUser,
-  getDataUser,
-} from "../controllers/usersControllers.js";
+import { updAvatar, updDataUser } from "../controllers/usersControllers.js";
 import authMiddleware from "../middlewares/auth.js";
 import {
   registerSchema,
@@ -29,7 +25,6 @@ userRouter.get("/current", authMiddleware, current);
 userRouter.get("/verify/:verificationToken", verifyEmail);
 userRouter.post("/verify", verifySchema, resendVerificationEmail);
 
-userRouter.get("/", authMiddleware, getDataUser);
 userRouter.patch(
   "/update",
   authMiddleware,
