@@ -36,6 +36,15 @@ export const verifySchema = (req, res, next) => {
   next();
 };
 
+export const updateUserSchema = Joi.object({
+  email: Joi.string().email().optional(),
+  name: Joi.string().trim().allow(null, "").optional(),
+  gender: Joi.string().valid("Woman", "Man").optional(),
+  weight: Joi.number().default(0).optional(),
+  activeTimeSports: Joi.number().default(0).optional(),
+  waterDrink: Joi.number().default(1.8).optional(),
+});
+
 export const updDataUserSchema = (req, res, next) => {
   const schema = Joi.object({
     name: {

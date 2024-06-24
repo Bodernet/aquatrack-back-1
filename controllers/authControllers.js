@@ -112,13 +112,7 @@ export async function current(req, res, next) {
       return res.status(401).send("Not authorized");
     }
     res.status(200).json({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      gender: user.gender,
-      weight: user.weight,
-      activeTimeSports: user.activeTimeSports,
-      waterDrink: user.waterDrink,
+      user,
     });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
