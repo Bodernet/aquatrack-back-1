@@ -3,7 +3,8 @@ import crypto from "node:crypto";
 import { User, registerSchema } from "../schemas/usersSchemas.js";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
-// import mail from "../mailtrap/mail.js";
+import generator from "generate-password";
+
 import sgMail from "@sendgrid/mail";
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -174,6 +175,98 @@ export async function resendVerificationEmail(req, res, next) {
       });
 
     res.status(200).json({ message: "Verification email sent" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export async function newPassword(req, res, next) {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "missing required field email" });
+    }
+    const foundUser = await User.findOne({ email });
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const password = generator.generate({ length: 10, numbers: true });
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await User.findByIdAndUpdate(foundUser._id, {
+      password: passwordHash,
+    });
+    const msg = {
+      to: email,
+      from: "aanytkaa@gmail.com",
+      subject: "Welcome to Agua track",
+      html: `Congratulations, you have received a new password: ${password}`,
+      text: `Congratulations, you have received a new password: ${password}`,
+    };
+
+    sgMail
+      .send(msg)
+      .then(() => {
+        console.log("Email sent");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    res.status(200).json("New password sent to email");
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export async function customPassword(req, res, next) {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "missing required field email" });
+    }
+    const foundUser = await User.findOne({ email });
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const token = jwt.sign(
+      { id: foundUser._id, email: foundUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+    await User.findByIdAndUpdate(
+      foundUser._id,
+      { tmpToken: token },
+      { new: true }
+    );
+    const msg = {
+      to: email,
+      from: "aanytkaa@gmail.com",
+      subject: "Welcome to Agua track",
+      html: `<a href="https://aquatrack-front-1.vercel.app/password?token=${token}">Link</a>`,
+      text: `<a href="https://aquatrack-front-1.vercel.app/password?token=${token}">Link</a>`,
+    };
+    sgMail
+      .send(msg)
+      .then(() => {
+        console.log("Email sent");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    res.status(200).json("New password sent to email");
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export async function updateCustomPassword(req, res, next) {
+  try {
+    const { password } = req.body;
+    const passwordHash = await bcrypt.hash(password, 10);
+    await User.findByIdAndUpdate(req.user._id, {
+      password: passwordHash,
+    });
+    res.status(200).json("Password updated");
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

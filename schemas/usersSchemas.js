@@ -13,6 +13,17 @@ export const registerSchema = (req, res, next) => {
   next();
 };
 
+export const newPasswordSchema = (req, res, next) => {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+  });
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+
 export const loginSchema = (req, res, next) => {
   const schema = Joi.object({
     email: Joi.string().email().required(),
@@ -49,6 +60,7 @@ export const updDataUserSchema = (req, res, next) => {
   const schema = Joi.object({
     name: {
       type: String,
+      default: "User",
     },
     gender: {
       type: String,
@@ -108,6 +120,10 @@ const userSchema = new mongoose.Schema(
       default: 1.8,
     },
     token: {
+      type: String,
+      default: null,
+    },
+    tmpToken: {
       type: String,
       default: null,
     },
