@@ -167,15 +167,15 @@
     "/users/logout": {
       "post": {
         "tags": ["Users"],
-        "summary": "Logout user",
+        "summary": "Sign out user",
         "security": [{ "Bearer": [] }],
         "responses": {
           "200": {
-            "description": "Successful log out",
+            "description": "Successful sign out",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LogoutResponse"
+                  "$ref": "#/components/schemas/SignOutResponse"
                 }
               }
             }
@@ -192,7 +192,7 @@
         }
       }
     },
-    "/users": {
+    "/users/update": {
       "patch": {
         "tags": ["Users"],
         "summary": "Update user",
@@ -230,6 +230,325 @@
           }
         }
       }
+    },
+    "/users/verify/{verificationToken}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Verify user email",
+        "parameters": [
+          {
+            "name": "verificationToken",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Verification token for user email"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Email successfully verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Email successfully verified"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid token"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/users/verify": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Verify resend",
+        "requestBody": {
+          "description": "Verify resend request",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyResendRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful verifyid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyResendResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid request body)"
+          },
+          "401": {
+            "description": "Verification failed"
+          },
+          "404": {
+            "description": "Service not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/users/avatars": {
+      "patch": {
+        "tags": ["Users"],
+        "summary": "Update user avatar",
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Successful update of user avatar",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "schema": {
+                    "$ref": "#/components/schemas/AvatarUpdateResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid request body)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "You must add a file"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/water": {
+      "post": {
+        "tags": ["Water"],
+        "summary": "Add water entry",
+        "security": [{ "Bearer": [] }],
+        "requestBody": {
+          "description": "Object to add water entry",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddWaterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful addition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddWaterResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/water/{id}": {
+      "patch": {
+        "tags": ["Water"],
+        "summary": "Update water entry",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the water entry"
+          }
+        ],
+        "requestBody": {
+          "description": "Object to update water entry",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWaterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful update",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateWaterResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entry not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Water"],
+        "summary": "Delete water entry",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the water entry"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful deletion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteWaterResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Entry not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/water/daily": {
+      "get": {
+        "tags": ["Water"],
+        "summary": "Get daily water entries",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2024-06-26"
+            },
+            "description": "Date to get entries"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDailyWaterResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/water/monthly": {
+      "get": {
+        "tags": ["Water"],
+        "summary": "Get monthly water entries",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "example": 6
+            },
+            "description": "Month to get entries"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "example": 2024
+            },
+            "description": "Year to get entries"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMonthlyWaterResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -243,9 +562,6 @@
           },
           "password": {
             "$ref": "#/components/examples/users/password"
-          },
-          "repeatPassword": {
-            "$ref": "#/components/examples/users/repeatPassword"
           }
         }
       },
@@ -256,13 +572,14 @@
           "properties": {
             "email": {
               "$ref": "#/components/examples/users/email"
-            },
-            "userId": {
-              "$ref": "#/components/examples/users/userId"
             }
           }
         },
-        "example": [{ "email": "1@gmail.com", "userId": "1" }]
+        "example": {
+          "user": {
+            "email": "example@gmail.com"
+          }
+        }
       },
       "SignInRequest": {
         "type": "object",
@@ -287,6 +604,12 @@
             "token": {
               "$ref": "#/components/examples/users/token"
             }
+          },
+          "example": {
+            "token": "exampleToken",
+            "user": {
+              "email": "example@gmail.com"
+            }
           }
         }
       },
@@ -306,6 +629,21 @@
             },
             "token": {
               "$ref": "#/components/examples/users/token"
+            },
+            "gender": {
+              "$ref": "#/components/examples/users/gender"
+            },
+            "weight": {
+              "$ref": "#/components/examples/users/weight"
+            },
+            "waterDrink": {
+              "$ref": "#/components/examples/users/waterDrink"
+            },
+            "activeTimeSports": {
+              "$ref": "#/components/examples/users/activeTimeSports"
+            },
+            "avatarURL": {
+              "$ref": "#/components/examples/users/avatarURL"
             }
           }
         }
@@ -315,20 +653,41 @@
         "items": {
           "type": "object",
           "properties": {
+            "userId": {
+              "$ref": "#/components/examples/users/userId"
+            },
+            "name": {
+              "$ref": "#/components/examples/users/name"
+            },
+            "email": {
+              "$ref": "#/components/examples/users/email"
+            },
             "token": {
               "$ref": "#/components/examples/users/token"
             },
-            "refreshToken": {
-              "$ref": "#/components/examples/users/refreshToken"
+            "gender": {
+              "$ref": "#/components/examples/users/gender"
+            },
+            "weight": {
+              "$ref": "#/components/examples/users/weight"
+            },
+            "waterDrink": {
+              "$ref": "#/components/examples/users/waterDrink"
+            },
+            "activeTimeSports": {
+              "$ref": "#/components/examples/users/activeTimeSports"
+            },
+            "avatarURL": {
+              "$ref": "#/components/examples/users/avatarURL"
             }
           }
         }
       },
-      "LogoutResponse": {
+      "SignOutResponse": {
         "type": "object",
         "properties": {
           "message": {
-            "$ref": "#/components/examples/users/message"
+            "$ref": "#/components/examples/users/messageSignOut"
           }
         }
       },
@@ -337,8 +696,26 @@
         "items": {
           "type": "object",
           "properties": {
-            "userId": {
-              "$ref": "#/components/examples/users/userId"
+            "name": {
+              "$ref": "#/components/examples/users/name"
+            },
+            "email": {
+              "$ref": "#/components/examples/users/email"
+            },
+            "gender": {
+              "$ref": "#/components/examples/users/gender"
+            },
+            "weight": {
+              "$ref": "#/components/examples/users/weight"
+            },
+            "waterDrink": {
+              "$ref": "#/components/examples/users/waterDrink"
+            },
+            "activeTimeSports": {
+              "$ref": "#/components/examples/users/activeTimeSports"
+            },
+            "avatarURL": {
+              "$ref": "#/components/examples/users/avatarURL"
             }
           }
         }
@@ -348,8 +725,212 @@
         "items": {
           "type": "object",
           "properties": {
-            "userId": {
-              "$ref": "#/components/examples/users/userId"
+            "name": {
+              "$ref": "#/components/examples/users/name"
+            },
+            "email": {
+              "$ref": "#/components/examples/users/email"
+            },
+            "gender": {
+              "$ref": "#/components/examples/users/gender"
+            },
+            "weight": {
+              "$ref": "#/components/examples/users/weight"
+            },
+            "waterDrink": {
+              "$ref": "#/components/examples/users/waterDrink"
+            },
+            "activeTimeSports": {
+              "$ref": "#/components/examples/users/activeTimeSports"
+            },
+            "avatarURL": {
+              "$ref": "#/components/examples/users/avatarURL"
+            }
+          }
+        }
+      },
+      "VerifyByEmailResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "$ref": "#/components/examples/users/messageVerify"
+          }
+        }
+      },
+      "VerifyResendRequest": {
+        "type": "object",
+        "required": ["true"],
+        "properties": {
+          "email": {
+            "$ref": "#/components/examples/users/email"
+          }
+        }
+      },
+      "VerifyResendResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "$ref": "#/components/examples/users/messageVerify"
+          }
+        }
+      },
+      "AvatarUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "avatarUrl": {
+            "$ref": "#/components/examples/users/avatarURL"
+          }
+        }
+      },
+      "AddWaterRequest": {
+        "type": "object",
+        "required": ["volume"],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Entry date",
+            "example": "2024-06-26"
+          },
+          "volume": {
+            "type": "number",
+            "description": "Volume of water in liters",
+            "example": 1.5
+          }
+        }
+      },
+      "AddWaterResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Entry ID",
+            "example": "64b1e25f6b0a2ccb95591ec7"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Entry date",
+            "example": "2024-06-26"
+          },
+          "volume": {
+            "type": "number",
+            "description": "Volume of water in liters",
+            "example": 1.5
+          },
+          "user": {
+            "type": "string",
+            "description": "User ID",
+            "example": "64b1e25f6b0a2ccb95591ec7"
+          }
+        }
+      },
+      "UpdateWaterRequest": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Entry date",
+            "example": "2024-06-26"
+          },
+          "volume": {
+            "type": "number",
+            "description": "Volume of water in liters",
+            "example": 1.8
+          }
+        }
+      },
+      "UpdateWaterResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Entry ID",
+            "example": "64b1e25f6b0a2ccb95591ec7"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Entry date",
+            "example": "2024-06-26"
+          },
+          "volume": {
+            "type": "number",
+            "description": "Volume of water in liters",
+            "example": 1.8
+          },
+          "user": {
+            "type": "string",
+            "description": "User ID",
+            "example": "64b1e25f6b0a2ccb95591ec7"
+          }
+        }
+      },
+      "DeleteWaterResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message for successful deletion",
+            "example": "Entry deleted successfully"
+          }
+        }
+      },
+      "GetDailyWaterResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Entry ID",
+              "example": "64b1e25f6b0a2ccb95591ec7"
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "description": "Entry date",
+              "example": "2024-06-26"
+            },
+            "volume": {
+              "type": "number",
+              "description": "Volume of water in liters",
+              "example": 1.5
+            },
+            "user": {
+              "type": "string",
+              "description": "User ID",
+              "example": "64b1e25f6b0a2ccb95591ec7"
+            }
+          }
+        }
+      },
+      "GetMonthlyWaterResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Entry ID",
+              "example": "64b1e25f6b0a2ccb95591ec7"
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "description": "Entry date",
+              "example": "2024-06-26"
+            },
+            "volume": {
+              "type": "number",
+              "description": "Volume of water in liters",
+              "example": 1.5
+            },
+            "user": {
+              "type": "string",
+              "description": "User ID",
+              "example": "64b1e25f6b0a2ccb95591ec7"
             }
           }
         }
@@ -363,11 +944,6 @@
           "format": "email"
         },
         "password": {
-          "type": "string",
-          "description": "User's password",
-          "example": "qwerty123"
-        },
-        "repeatPassword": {
           "type": "string",
           "description": "User's password",
           "example": "qwerty123"
@@ -392,10 +968,40 @@
           "description": "User's name",
           "example": "Devid"
         },
-        "message": {
+        "messageSignOut": {
           "type": "string",
           "description": "Sign out success",
           "example": "Sign out success"
+        },
+        "gender": {
+          "type": "string",
+          "description": "User's gender",
+          "example": "Woman"
+        },
+        "weight": {
+          "type": "number",
+          "description": "User's weight",
+          "example": 0
+        },
+        "activeTimeSports": {
+          "type": "number",
+          "description": "User's active time in sports",
+          "example": 0
+        },
+        "waterDrink": {
+          "type": "number",
+          "description": "User's daily water intake in liters",
+          "example": 1.8
+        },
+        "avatarURL": {
+          "type": "string",
+          "description": "User's avatar URL",
+          "example": "//www.gravatar.com/avatar/c951f1265ed645cea2c372ecd9672f5f"
+        },
+        "messageVerify": {
+          "type": "string",
+          "description": "Verifying success",
+          "example": "Verifying success"
         }
       }
     },
