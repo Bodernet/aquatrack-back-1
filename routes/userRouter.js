@@ -6,11 +6,16 @@ import {
   current,
   verifyEmail,
   resendVerificationEmail,
+  newPassword,
+  customPassword,
+  updateCustomPassword,
 } from "../controllers/authControllers.js";
 import { updAvatar, updDataUser } from "../controllers/usersControllers.js";
 import authMiddleware from "../middlewares/auth.js";
+import authPasswordMiddleware from "../middlewares/authPassword.js";
 import {
   registerSchema,
+  newPasswordSchema,
   loginSchema,
   verifySchema,
 } from "../schemas/usersSchemas.js";
@@ -24,6 +29,14 @@ userRouter.post("/logout", authMiddleware, logout);
 userRouter.get("/current", authMiddleware, current);
 userRouter.get("/verify/:verificationToken", verifyEmail);
 userRouter.post("/verify", verifySchema, resendVerificationEmail);
+
+userRouter.post("/password/new", newPasswordSchema, newPassword); // Надсилає новий пароль на пошту
+userRouter.post("/password/custom", authMiddleware, customPassword); // переводить на сторінку оновлення пароля та дає тимчасовий токен
+userRouter.post(
+  "/password/custom/update",
+  authPasswordMiddleware,
+  updateCustomPassword // оновлює пароль
+);
 
 userRouter.patch(
   "/update",
