@@ -572,6 +572,9 @@
           "properties": {
             "email": {
               "$ref": "#/components/examples/users/email"
+            },
+            "password": {
+              "$ref": "#/components/examples/users/password"
             }
           }
         },
@@ -598,18 +601,36 @@
         "items": {
           "type": "object",
           "properties": {
+            "gender": {
+              "$ref": "#/components/examples/users/gender"
+            },
+            "name": {
+              "$ref": "#/components/examples/users/name"
+            },
             "email": {
               "$ref": "#/components/examples/users/email"
             },
-            "token": {
-              "$ref": "#/components/examples/users/token"
+            "weight": {
+              "$ref": "#/components/examples/users/weight"
+            },
+            "activeTimeSports": {
+              "$ref": "#/components/examples/users/activeTimeSports"
+            },
+            "waterDrink": {
+              "$ref": "#/components/examples/users/waterDrink"
+            },
+            "avatarURL": {
+              "$ref": "#/components/examples/users/avatarURL"
             }
           },
           "example": {
-            "token": "exampleToken",
-            "user": {
-              "email": "example@gmail.com"
-            }
+            "gender": "male",
+            "name": "John Doe",
+            "email": "example@gmail.com",
+            "weight": 70,
+            "activeTimeSports": 5,
+            "waterDrink": 2,
+            "avatarURL": "//www.gravatar.com/avatar/c951f1265ed645cea2c372ecd9672f5f"
           }
         }
       },
