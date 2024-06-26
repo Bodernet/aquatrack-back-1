@@ -89,8 +89,7 @@ export async function login(req, res, next) {
     await User.findByIdAndUpdate(user._id, { token }, { new: true });
 
     res.status(200).json({
-      token: token,
-      user: { email: user.email },
+      user,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

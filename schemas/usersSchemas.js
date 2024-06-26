@@ -90,6 +90,7 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
+      default: "Aquaman",
     },
     password: {
       type: String,
