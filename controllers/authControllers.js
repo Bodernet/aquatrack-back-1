@@ -87,6 +87,7 @@ export async function login(req, res, next) {
       { expiresIn: "24h" }
     );
     await User.findByIdAndUpdate(user._id, { token }, { new: true });
+    console.log("User avatarUrl:", user.avatarUrl);
     res.status(200).json({
       token,
       user: {
@@ -97,9 +98,8 @@ export async function login(req, res, next) {
         weight: user.weight,
         activeTimeSports: user.activeTimeSports,
         waterDrink: user.waterDrink,
-        avatarUrl: user.avatarUrl,
+        avatarURL: user.avatarURL,
         verify: user.verify,
-        token: user.token,
         verificationToken: user.verificationToken,
       },
     });
