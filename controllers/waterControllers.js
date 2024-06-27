@@ -7,7 +7,7 @@ export const addWater = async (req, res) => {
 
     const newWaterEntry = await Water.create({
       user: userId,
-      date: date || new Date(),
+      date: date ? new Date(date) : new Date(),
       volume,
     });
 
@@ -25,7 +25,7 @@ export const updateWater = async (req, res) => {
 
     const updatedWaterEntry = await Water.findOneAndUpdate(
       { _id: id, user: userId },
-      { date, volume },
+      { date: date ? new Date(date) : undefined, volume },
       { new: true }
     );
 
@@ -64,7 +64,9 @@ export const getDailyWater = async (req, res) => {
     const userId = req.user.id;
     const date = req.query.date ? new Date(req.query.date) : new Date();
     const startDate = new Date(
-      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
     );
     const endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
 
