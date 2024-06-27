@@ -84,12 +84,24 @@ export async function login(req, res, next) {
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: 5000 }
+      { expiresIn: "24h" }
     );
     await User.findByIdAndUpdate(user._id, { token }, { new: true });
 
     res.status(200).json({
-      user,
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        gender: user.gender,
+        weight: user.weight,
+        activeTimeSports: user.activeTimeSports,
+        waterDrink: user.waterDrink,
+        avatarUrl: user.avatarUrl,
+        verify: user.verify,
+        verificationToken: user.verificationToken,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -98,7 +110,7 @@ export async function login(req, res, next) {
 
 export async function logout(req, res, next) {
   try {
-    await User.findByIdAndUpdate(req.user.id, { token: null }, { new: true });
+    await User.findByIdAndUpdate(req.user._id, { token: null }, { new: true });
     res.status(204).end();
   } catch (error) {
     res.status(500).json({ message: error.message });

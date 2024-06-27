@@ -82,6 +82,13 @@ export async function updAvatar(req, res, next) {
     }
     const newPath = path.resolve("public", "avatars", req.file.filename);
     const avaURL = path.join("avatars", req.file.filename);
+    Jimp.read(req.file.path)
+      .then((file) => {
+        return file.resize(200, 200).quality(60).write(newPath);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
 
     await fs.rename(req.file.path, newPath);
     const user = await User.findByIdAndUpdate(
