@@ -86,6 +86,7 @@ export async function login(req, res, next) {
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
+
     await User.findByIdAndUpdate(user._id, { token }, { new: true });
     console.log("User avatarUrl:", user.avatarURL);
     res.status(200).json({
@@ -142,11 +143,12 @@ export async function verifyEmail(req, res, next) {
       verify: true,
       verificationToken: null,
     });
+
     const redirectUrl =
       "http://localhost:5173/signin" ||
       "https://aquatrack-back-1.onrender.com/api/";
     res.redirect(redirectUrl);
-    // res.redirect("http://localhost:5173/signin")
+    // res.redirect("http://localhost:5173/signin");
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
