@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import crypto from "node:crypto";
+import crypto, { verify } from "node:crypto";
 import { User, registerSchema } from "../schemas/usersSchemas.js";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
@@ -98,6 +98,9 @@ export async function login(req, res, next) {
         activeTimeSports: user.activeTimeSports,
         waterDrink: user.waterDrink,
         avatarUrl: user.avatarUrl,
+        verify: user.verify,
+        token: user.token,
+        verificationToken: user.verificationToken,
       },
     });
   } catch (error) {
