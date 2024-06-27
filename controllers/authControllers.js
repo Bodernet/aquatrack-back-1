@@ -142,7 +142,11 @@ export async function verifyEmail(req, res, next) {
       verify: true,
       verificationToken: null,
     });
-    res.redirect("http://localhost:5173/signin");
+    const redirectUrl =
+      "http://localhost:5173/signin" ||
+      "https://aquatrack-back-1.onrender.com/api/";
+    res.redirect(redirectUrl);
+    // res.redirect("http://localhost:5173/signin")
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
