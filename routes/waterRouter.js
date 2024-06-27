@@ -6,14 +6,19 @@ import {
   getDailyWater,
   getMonthlyWater,
 } from "../controllers/waterControllers.js";
-import { addWaterSchema, updateWaterSchema } from "../schemas/waterSchemas.js";
+import {
+  addWaterSchema,
+  updateWaterSchema,
+  getDailyWaterSchema,
+  getMonthlyWaterSchema,
+} from "../schemas/waterSchemas.js";
 
 const waterRouter = express.Router();
 
 waterRouter.post("/", addWaterSchema, addWater);
 waterRouter.patch("/:id", updateWaterSchema, updateWater);
 waterRouter.delete("/:id", deleteWater);
-waterRouter.get("/daily", getDailyWater);
-waterRouter.get("/monthly", getMonthlyWater);
+waterRouter.get("/daily", getDailyWaterSchema, getDailyWater);
+waterRouter.get("/monthly", getMonthlyWaterSchema, getMonthlyWater);
 
 export default waterRouter;
