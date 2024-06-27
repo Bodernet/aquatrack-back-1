@@ -19,7 +19,6 @@ export async function register(req, res, next) {
         .status(400)
         .json({ message: "Password must be between 6 and 32 characters long" });
     }
-
     const user = await User.findOne({ email });
     if (user !== null) {
       return res.status(409).send({ message: "User already registered" });
@@ -29,14 +28,26 @@ export async function register(req, res, next) {
     const verificationToken = crypto.randomUUID();
     const verificationLink = `${BASE_URL}/api/users/verify/${verificationToken}`;
 
+    const postNewUser = await User.create({
+      email,
+      password: passwordHash,
+      avatarURL,
+      verificationToken,
+    });
+
+    const token = jwt.sign(
+      { id: postNewUser._id, email: postNewUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+    await User.findByIdAndUpdate(postNewUser._id, { token }, { new: true });
+
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
       subject: "Welcome to Agua track",
       html: `To confirm you email please click on <a href="${verificationLink}">Link</a>`,
-      text: `To confirm you email please open the link ${verificationLink}`,
     };
-
     sgMail
       .send(msg)
       .then(() => {
@@ -46,16 +57,18 @@ export async function register(req, res, next) {
         console.error(error);
       });
 
-    const postNewUser = await User.create({
-      email,
-      password: passwordHash,
-      avatarURL,
-      verificationToken,
-    });
-
     res.status(201).json({
+      token,
       user: {
+        id: postNewUser._id,
+        name: postNewUser.name,
         email: postNewUser.email,
+        gender: postNewUser.gender,
+        weight: postNewUser.weight,
+        activeTimeSports: postNewUser.activeTimeSports,
+        waterDrink: postNewUser.waterDrink,
+        avatarURL: postNewUser.avatarURL,
+        verify: postNewUser.verify,
       },
     });
   } catch (error) {
@@ -88,7 +101,6 @@ export async function login(req, res, next) {
     );
 
     await User.findByIdAndUpdate(user._id, { token }, { new: true });
-    console.log("User avatarUrl:", user.avatarURL);
     res.status(200).json({
       token,
       user: {
@@ -145,8 +157,10 @@ export async function verifyEmail(req, res, next) {
     });
 
     const redirectUrl =
-      "http://localhost:5173/signin" ||
-      "https://aquatrack-back-1.onrender.com/api/";
+      "http://localhost:5173/tracker" ||
+      "https://aquatrack-front-1.vercel.app/tracker";
+    // "http://localhost:5173/signin" ||
+    // "https://aquatrack-back-1.onrender.com/api/";
     res.redirect(redirectUrl);
     // res.redirect("http://localhost:5173/signin");
   } catch (error) {
@@ -286,5 +300,21 @@ export async function updateCustomPassword(req, res, next) {
     res.status(200).json("Password updated");
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+}
+
+export async function countUsers(req, res, next) {
+  try {
+    const totalCount = await User.countDocuments();
+    const users = await User.aggregate([
+      { $sample: { size: 3 } },
+      { $project: { avatarURL: 1, _id: 0 } },
+    ]);
+    res.json({
+      userCount: totalCount,
+      userAvatars: users,
+    });
+  } catch (error) {
+    next(error);
   }
 }
