@@ -282,3 +282,19 @@ export async function updateCustomPassword(req, res, next) {
     res.status(500).json({ message: error.message });
   }
 }
+
+export async function countUsers(req, res, next) {
+  try {
+    const totalCount = await User.countDocuments();
+    const users = await User.aggregate([
+      { $sample: { size: 3 } },
+      { $project: { avatarURL: 1, _id: 0 } },
+    ]);
+    res.json({
+      userCount: totalCount,
+      userAvatars: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
