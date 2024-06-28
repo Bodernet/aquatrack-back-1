@@ -35,12 +35,12 @@ export async function register(req, res, next) {
       verificationToken,
     });
 
-    const token = jwt.sign(
-      { id: postNewUser._id, email: postNewUser.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
-    await User.findByIdAndUpdate(postNewUser._id, { token }, { new: true });
+    // const token = jwt.sign(
+    //   { id: postNewUser._id, email: postNewUser.email },
+    //   process.env.JWT_SECRET,
+    //   { expiresIn: "24h" }
+    // );
+    // await User.findByIdAndUpdate(postNewUser._id, { token }, { new: true });
 
     const msg = {
       to: email,
@@ -58,17 +58,17 @@ export async function register(req, res, next) {
       });
 
     res.status(201).json({
-      token,
+      // token,
       user: {
-        id: postNewUser._id,
-        name: postNewUser.name,
+        // id: postNewUser._id,
+        // name: postNewUser.name,
         email: postNewUser.email,
-        gender: postNewUser.gender,
-        weight: postNewUser.weight,
-        activeTimeSports: postNewUser.activeTimeSports,
-        waterDrink: postNewUser.waterDrink,
-        avatarURL: postNewUser.avatarURL,
-        verify: postNewUser.verify,
+        // gender: postNewUser.gender,
+        // weight: postNewUser.weight,
+        // activeTimeSports: postNewUser.activeTimeSports,
+        // waterDrink: postNewUser.waterDrink,
+        // avatarURL: postNewUser.avatarURL,
+        // verify: postNewUser.verify,
       },
     });
   } catch (error) {
@@ -113,7 +113,6 @@ export async function login(req, res, next) {
         waterDrink: user.waterDrink,
         avatarURL: user.avatarURL,
         verify: user.verify,
-        verificationToken: user.verificationToken,
       },
     });
   } catch (error) {
@@ -158,11 +157,10 @@ export async function verifyEmail(req, res, next) {
 
     const redirectUrl =
       "http://localhost:5173/tracker" ||
-      "https://aquatrack-front-1.vercel.app/tracker";
+      "https://aquatrack-front-1.vercel.api/tracker";
     // "http://localhost:5173/signin" ||
     // "https://aquatrack-back-1.onrender.com/api/";
     res.redirect(redirectUrl);
-    // res.redirect("http://localhost:5173/signin");
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
