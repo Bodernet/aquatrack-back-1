@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Joi from "joi";
+import { Schema, model } from "mongoose";
 
 export const registerSchema = (req, res, next) => {
   const schema = Joi.object({
@@ -155,4 +156,17 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+const TokenSchema = new Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  refreshToken: {
+    type: String,
+    required: true,
+  },
+});
+
 export const User = mongoose.model("User", userSchema);
+export const RefreshToken = model("RefreshToken", TokenSchema);
