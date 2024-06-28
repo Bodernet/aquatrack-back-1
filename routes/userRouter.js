@@ -10,6 +10,8 @@ import {
   customPassword,
   updateCustomPassword,
   countUsers,
+  googleAuth,
+  googleRedirect,
 } from "../controllers/authControllers.js";
 import { updAvatar, updDataUser } from "../controllers/usersControllers.js";
 import authMiddleware from "../middlewares/auth.js";
@@ -39,6 +41,10 @@ userRouter.post(
   authPasswordMiddleware,
   updateCustomPassword // оновлює пароль
 );
+
+userRouter.get('/google', googleAuth);
+userRouter.get('/google-redirect', googleRedirect);
+
 
 userRouter.patch(
   "/update",
