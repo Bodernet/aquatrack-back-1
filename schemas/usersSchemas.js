@@ -132,6 +132,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       // default: null,
     },
+    googleId: {
+      type: String,
+      default: null,
+    },
     verify: {
       type: Boolean,
       default: false,
@@ -139,6 +143,10 @@ const userSchema = new mongoose.Schema(
     verificationToken: {
       type: String,
       required: [true, "Verify token is required"],
+    },
+    displayName: {
+      type: String,
+      default: null,
     },
   },
   {
