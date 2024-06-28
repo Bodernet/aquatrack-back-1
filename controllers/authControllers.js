@@ -4,6 +4,7 @@ import { User, registerSchema } from "../schemas/usersSchemas.js";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 import generator from "generate-password";
+import * as tokenServices from "../services/tokenServices.js";
 import axios from "axios";
 import queryString from "query-string";
 
@@ -11,6 +12,12 @@ import sgMail from "@sendgrid/mail";
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const { BASE_URL } = process.env;
+const cookieConfig = {
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+  httpOnly: true,
+  sameSite: "none",
+  secure: true,
+};
 
 export async function register(req, res, next) {
   try {
@@ -37,13 +44,6 @@ export async function register(req, res, next) {
       verificationToken,
     });
 
-    // const token = jwt.sign(
-    //   { id: postNewUser._id, email: postNewUser.email },
-    //   process.env.JWT_SECRET,
-    //   { expiresIn: "24h" }
-    // );
-    // await User.findByIdAndUpdate(postNewUser._id, { token }, { new: true });
-
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
@@ -62,15 +62,7 @@ export async function register(req, res, next) {
     res.status(201).json({
       // token,
       user: {
-        // id: postNewUser._id,
-        // name: postNewUser.name,
         email: postNewUser.email,
-        // gender: postNewUser.gender,
-        // weight: postNewUser.weight,
-        // activeTimeSports: postNewUser.activeTimeSports,
-        // waterDrink: postNewUser.waterDrink,
-        // avatarURL: postNewUser.avatarURL,
-        // verify: postNewUser.verify,
       },
     });
   } catch (error) {
@@ -138,7 +130,16 @@ export async function current(req, res, next) {
       return res.status(401).send("Not authorized");
     }
     res.status(200).json({
-      user,
+      user: {
+        name: user.name,
+        email: user.email,
+        gender: user.gender,
+        weight: user.weight,
+        activeTimeSports: user.activeTimeSports,
+        waterDrink: user.waterDrink,
+        avatarURL: user.avatarURL,
+        verify: user.verify,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -152,16 +153,25 @@ export async function verifyEmail(req, res, next) {
     if (user === null) {
       return res.status(404).json("User not found");
     }
-    await User.findByIdAndUpdate(user._id, {
-      verify: true,
-      verificationToken: null,
-    });
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    await User.findByIdAndUpdate(
+      user._id,
+      { token },
+      {
+        verify: true,
+        verificationToken: null,
+      },
+      { new: true }
+    );
 
     const redirectUrl =
-      "http://localhost:5173/tracker" ||
-      "https://aquatrack-front-1.vercel.api/tracker";
-    // "http://localhost:5173/signin" ||
-    // "https://aquatrack-back-1.onrender.com/api/";
+      `http://localhost:5173/tracker?token=${token}` ||
+      `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
     res.redirect(redirectUrl);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -184,11 +194,9 @@ export async function resendVerificationEmail(req, res, next) {
         .json({ message: "Verification has already been passed" });
     }
     const verificationToken = crypto.randomUUID();
-
     user.verificationToken = verificationToken;
     await user.save();
     const verificationLink = `${BASE_URL}/api/users/verify/${verificationToken}`;
-
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
@@ -204,7 +212,6 @@ export async function resendVerificationEmail(req, res, next) {
       .catch((error) => {
         console.error(error);
       });
-
     res.status(200).json({ message: "Verification email sent" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -399,12 +406,9 @@ export async function googleRedirect(req, res, next) {
 
     await User.findByIdAndUpdate(userMongo._id, { token }, { new: true });
 
-    res.cookie("tmpToken", tmpToken, {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-    });
-
-    res.redirect(`${process.env.FRONTEND_URL}/tracker?token=${token}`);
+    res
+      .cookie("tmpToken", tmpToken, cookieConfig)
+      .redirect(`${process.env.FRONTEND_URL}?token=${token}`);
   } catch (error) {
     next(error);
   }
