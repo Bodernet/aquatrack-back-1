@@ -4,6 +4,8 @@ import { User, registerSchema } from "../schemas/usersSchemas.js";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 import generator from "generate-password";
+import axios from "axios";
+import queryString from "query-string";
 
 import sgMail from "@sendgrid/mail";
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -312,6 +314,97 @@ export async function countUsers(req, res, next) {
       userCount: totalCount,
       userAvatars: users,
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function googleAuth(req, res, next) {
+  try {
+    const stringifiedParams = queryString.stringify({
+      client_id: process.env.GOOGLE_CLOUD_ID,
+      redirect_uri: process.env.BASE_URI + "/api/users/google-redirect",
+      scope: ["profile", "email"].join(" "),
+      response_type: "code",
+      access_type: "offline",
+      prompt: "consent",
+    });
+
+    res.redirect(
+      "https://accounts.google.com/o/oauth2/v2/auth?" + stringifiedParams
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function googleRedirect(req, res, next) {
+  try {
+    const fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
+    const urlObj = new URL(fullUrl);
+    const urlParams = queryString.parse(urlObj.search);
+    const code = urlParams.code;
+
+    const tokenData = await axios({
+      url: "https://oauth2.googleapis.com/token",
+      method: "post",
+      data: queryString.stringify({
+        client_id: process.env.GOOGLE_CLOUD_ID,
+        client_secret: process.env.GOOGLE_CLOUD_SECRET_KEY,
+        redirect_uri: process.env.BASE_URI + "/api/users/google-redirect",
+        grant_type: "authorization_code",
+        code,
+      }),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    const userData = await axios({
+      url: "https://www.googleapis.com/oauth2/v2/userinfo",
+      method: "get",
+      headers: {
+        Authorization: `Bearer ${tokenData.data.access_token}`,
+      },
+    });
+
+    const email = userData.data.email;
+    const name = userData.data.given_name;
+    const googleId = userData.data.id;
+    const avatarURL = userData.data.picture;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      const hashedPassword = await bcrypt.hash(name, 10);
+      const newUser = new User({
+        email,
+        name,
+        password: hashedPassword,
+        avatarURL,
+        googleId,
+        displayName: userData.data.name,
+      });
+      await newUser.save();
+    } else {
+      await User.findOneAndUpdate(
+        { email },
+        { displayName: userData.data.name, googleId }
+      );
+    }
+
+    const userMongo = await User.findOne({ email });
+    const payload = { id: userMongo._id, email: userMongo.email };
+    const { token, tmpToken } = await tokenServices.generateToken(payload);
+    await tokenServices.saveToken(userMongo._id, tmpToken);
+
+    await User.findByIdAndUpdate(userMongo._id, { token }, { new: true });
+
+    res.cookie("tmpToken", tmpToken, {
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+    });
+
+    res.redirect(`${process.env.FRONTEND_URL}/tracker?token=${token}`);
   } catch (error) {
     next(error);
   }
