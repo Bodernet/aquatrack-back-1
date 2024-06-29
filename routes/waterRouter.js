@@ -15,8 +15,16 @@ import {
 
 const waterRouter = express.Router();
 
-waterRouter.post("/", addWaterSchema, addWater);
-waterRouter.patch("/:id", updateWaterSchema, updateWater);
+waterRouter.post(
+  "/",
+  // addWaterSchema,
+  addWater
+);
+waterRouter.patch(
+  "/:id",
+  // updateWaterSchema,
+  updateWater
+);
 waterRouter.delete("/:id", deleteWater);
 waterRouter.get("/daily", getDailyWaterSchema, getDailyWater);
 waterRouter.get("/monthly", getMonthlyWaterSchema, getMonthlyWater);
