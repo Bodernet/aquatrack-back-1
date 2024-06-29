@@ -20,9 +20,7 @@ export const addWaterSchema = (req, res, next) => {
 
 export const updateWaterSchema = (req, res, next) => {
   const schema = Joi.object({
-    date: Joi.string()
-      .pattern(/^\d{4}-\d{2}-\d{2}$/)
-      .optional(),
+    date: Joi.string().isoDate().optional(),
     volume: Joi.number().required(),
   });
   const { error } = schema.validate(req.body);
