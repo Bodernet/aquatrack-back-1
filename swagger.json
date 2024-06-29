@@ -12,8 +12,8 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "servers": [
-    { "url": "http://localhost:3000" },
-    { "url": "https://aquatrack-back-1.onrender.com/" }
+    { "url": "http://localhost:3000/api" },
+    { "url": "https://aquatrack-back-1.onrender.com/api" }
   ],
   "tags": [
     {
@@ -570,11 +570,10 @@
         "items": {
           "type": "object",
           "properties": {
-            "email": {
-              "$ref": "#/components/examples/users/email"
-            },
-            "password": {
-              "$ref": "#/components/examples/users/password"
+            "user": {
+              "email": {
+                "$ref": "#/components/examples/users/email"
+              }
             }
           }
         },
