@@ -499,19 +499,23 @@
       "SignUpResponse": {
         "type": "object",
         "properties": {
-          "token": {
-            "$ref": "#/components/examples/users/token"
-          },
           "user": {
             "type": "object",
             "properties": {
               "email": {
-                "$ref": "#/components/examples/users/email"
+                "$ref": "#/components/examples/users/email",
+                "description": "User's email address"
               }
             }
           }
+        },
+        "example": {
+          "user": {
+            "email": "example@gmail.com"
+          }
         }
       },
+
       "VerifyByEmailResponse": {
         "type": "object",
         "properties": {

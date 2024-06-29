@@ -36,11 +36,6 @@ export async function register(req, res, next) {
     const avatarURL = gravatar.url(email);
     const verificationToken = crypto.randomUUID();
     const verificationLink = `${BASE_URL}/api/users/verify/${verificationToken}`;
-    const token = jwt.sign(
-      { password: password, email: email },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
 
     const postNewUser = await User.create({
       email,
@@ -66,7 +61,7 @@ export async function register(req, res, next) {
       });
 
     res.status(201).json({
-      token,
+      // token,
       user: {
         email: postNewUser.email,
       },
@@ -163,7 +158,7 @@ export async function verifyEmail(req, res, next) {
   try {
     const { verificationToken } = req.params;
     const user = await User.findOne({ verificationToken });
-    if (user === null) {
+    if (!user) {
       return res.status(404).json("User not found");
     }
     const token = jwt.sign(
@@ -171,16 +166,15 @@ export async function verifyEmail(req, res, next) {
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
-
-    await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
       user._id,
-      { token },
-      {
-        verify: true,
-        verificationToken: null,
-      },
+      { $set: { token, verify: true, verificationToken: null } },
       { new: true }
     );
+
+    if (!updatedUser) {
+      return res.status(500).json("Failed to update user");
+    }
 
     const redirectUrl =
       "http://localhost:5173/signin" ||
@@ -344,21 +338,26 @@ export async function countUsers(req, res, next) {
 }
 
 export const googleAuth = async (req, res, next) => {
-  const stringifiedParams = queryString.stringify({
-    client_id: process.env.GOOGLE_CLOUD_ID,
-    redirect_uri: `${process.env.BASE_URI}/api/users/google-redirect`,
-    scope: [
+  try {
+    const clientId = process.env.GOOGLE_CLOUD_ID;
+    const redirectUri = `${process.env.BASE_URL}/api/users/google-redirect`;
+    const scope = [
       "https://www.googleapis.com/auth/userinfo.email",
       "https://www.googleapis.com/auth/userinfo.profile",
-    ].join(" "),
-    response_type: "code",
-    access_type: "offline",
-    prompt: "consent",
-  });
-
-  res.redirect(
-    `https://accounts.google.com/o/oauth2/v2/auth?${stringifiedParams}`
-  );
+    ].join(" ");
+    const stringifiedParams = queryString.stringify({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: scope,
+      response_type: "code",
+      access_type: "offline",
+      prompt: "consent",
+    });
+    const redirectUrl = `https://accounts.google.com/o/oauth2/v2/auth?${stringifiedParams}`;
+    res.redirect(redirectUrl);
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const googleRedirect = async (req, res, next) => {
@@ -374,13 +373,10 @@ export const googleRedirect = async (req, res, next) => {
       data: {
         client_id: process.env.GOOGLE_CLOUD_ID,
         client_secret: process.env.GOOGLE_CLOUD_SECRET_KEY,
-        redirect_uri: `${process.env.BASE_URI}/api/users/google-redirect`,
+        redirect_uri: `${process.env.BASE_URL}/api/users/google-redirect`,
         grant_type: "authorization_code",
         code,
       },
-      // headers: {
-      //   "Content-Type": "application/x-www-form-urlencoded",
-      // },
     });
 
     const userData = await axios({
@@ -390,41 +386,44 @@ export const googleRedirect = async (req, res, next) => {
         Authorization: `Bearer ${tokenData.data.access_token}`,
       },
     });
-
     const email = userData.data.email;
     const name = userData.data.given_name;
     const googleId = userData.data.id;
     const avatarURL = userData.data.picture;
 
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
     if (!user) {
-      const hashedPassword = await bcrypt.hash(name, 10);
-      const newUser = new User({
+      const hashedPassword = await bcrypt.hash(crypto.randomUUID(), 10);
+      user = new User({
         email,
         name,
         password: hashedPassword,
         avatarURL,
         googleId,
         displayName: userData.data.name,
+        verify: true,
+        verificationToken: null,
       });
-      await newUser.save();
+      await user.save();
     } else {
-      await User.findOneAndUpdate(
+      user = await User.findOneAndUpdate(
         { email },
-        { displayName: userData.data.name, googleId }
+        {
+          displayName: userData.data.name,
+          googleId,
+          verify: true,
+          verificationToken: null,
+        },
+        { new: true }
       );
     }
-
-    const userMongo = await User.findOne({ email });
-    const payload = { id: userMongo._id, email: userMongo.email };
-    const { token, tmpToken } = await tokenServices.generateToken(payload);
-    await tokenServices.saveToken(userMongo._id, tmpToken);
-
-    await User.findByIdAndUpdate(userMongo._id, { token }, { new: true });
-
+    const payload = { id: user._id, email: user.email };
+    const { token, refreshToken } = await tokenServices.generateToken(payload);
+    await tokenServices.saveToken(user._id, refreshToken);
+    await User.findByIdAndUpdate(user._id, { token }, { new: true });
     res
-      .cookie("tmpToken", tmpToken, cookieConfig)
-      .redirect(`${process.env.FRONTEND_URL}?token=${token}`);
+      .cookie("refreshToken", refreshToken, cookieConfig)
+      .redirect(`${process.env.FRONTEND_URL}/tracker?token=${token}`);
   } catch (error) {
     next(error);
   }
