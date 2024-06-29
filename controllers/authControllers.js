@@ -42,7 +42,6 @@ export async function register(req, res, next) {
       password: passwordHash,
       avatarURL,
       verificationToken,
-      token,
     });
 
     const msg = {
