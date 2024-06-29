@@ -63,6 +63,7 @@ export async function register(req, res, next) {
       // token,
       user: {
         email: postNewUser.email,
+        verificationToken: postNewUser.verificationToken,
       },
     });
   } catch (error) {
@@ -169,10 +170,12 @@ export async function verifyEmail(req, res, next) {
       { new: true }
     );
 
-    const redirectUrl =
-      `http://localhost:5173/tracker?token=${token}` ||
-      `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
-    res.redirect(redirectUrl);
+    res.status(200).json("Verification successful");
+
+    // const redirectUrl =
+    //   "http://localhost:5173/tracker" ||
+    //   "https://aquatrack-front-1.vercel.api/tracker";
+    // res.redirect(redirectUrl);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
