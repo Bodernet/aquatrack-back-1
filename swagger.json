@@ -67,6 +67,50 @@
         }
       }
     },
+    "/users/verify/{verificationToken}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Verify user email",
+        "parameters": [
+          {
+            "name": "verificationToken",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Verification token for user email"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Email successfully verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Email successfully verified"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid token"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/users/login": {
       "post": {
         "tags": ["Users"],
@@ -120,34 +164,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GetCurrentResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Service not found"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/users/current/refresh": {
-      "get": {
-        "tags": ["Users"],
-        "summary": "Refresh user's token",
-        "security": [{ "Bearer": [] }],
-        "responses": {
-          "200": {
-            "description": "Successful refresh current user's token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GetRefreshCurrentResponse"
                 }
               }
             }
@@ -221,91 +237,6 @@
           },
           "401": {
             "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Service not found"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/users/verify/{verificationToken}": {
-      "get": {
-        "tags": ["Users"],
-        "summary": "Verify user email",
-        "parameters": [
-          {
-            "name": "verificationToken",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Verification token for user email"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Email successfully verified",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Email successfully verified"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid token"
-          },
-          "404": {
-            "description": "User not found"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/users/verify": {
-      "post": {
-        "tags": ["Users"],
-        "summary": "Verify resend",
-        "requestBody": {
-          "description": "Verify resend request",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VerifyResendRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful verifyid",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VerifyResendResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (invalid request body)"
-          },
-          "401": {
-            "description": "Verification failed"
           },
           "404": {
             "description": "Service not found"
@@ -566,20 +497,26 @@
         }
       },
       "SignUpResponse": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "user": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "$ref": "#/components/examples/users/token"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
               "email": {
                 "$ref": "#/components/examples/users/email"
               }
             }
           }
-        },
-        "example": {
-          "user": {
-            "email": "example@gmail.com"
+        }
+      },
+      "VerifyByEmailResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "$ref": "#/components/examples/users/messageVerify"
           }
         }
       },
@@ -598,107 +535,130 @@
       "SignInResponse": {
         "type": "object",
         "properties": {
-          "gender": {
-            "$ref": "#/components/examples/users/gender"
+          "token": {
+            "type": "string",
+            "description": "JWT token for authentication"
           },
-          "name": {
-            "$ref": "#/components/examples/users/name"
-          },
-          "email": {
-            "$ref": "#/components/examples/users/email"
-          },
-          "weight": {
-            "$ref": "#/components/examples/users/weight"
-          },
-          "activeTimeSports": {
-            "$ref": "#/components/examples/users/activeTimeSports"
-          },
-          "waterDrink": {
-            "$ref": "#/components/examples/users/waterDrink"
-          },
-          "avatarURL": {
-            "$ref": "#/components/examples/users/avatarURL"
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "User's ID"
+              },
+              "name": {
+                "type": "string",
+                "description": "User's name"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "description": "User's email address"
+              },
+              "gender": {
+                "$ref": "#/components/examples/users/gender",
+                "description": "User's gender"
+              },
+              "weight": {
+                "$ref": "#/components/examples/users/weight",
+                "description": "User's weight"
+              },
+              "activeTimeSports": {
+                "$ref": "#/components/examples/users/activeTimeSports",
+                "description": "User's active time in sports (hours per day)"
+              },
+              "waterDrink": {
+                "$ref": "#/components/examples/users/waterDrink",
+                "description": "User's daily water intake (liters)"
+              },
+              "avatarURL": {
+                "$ref": "#/components/examples/users/avatarURL",
+                "description": "URL to user's avatar image"
+              },
+              "verify": {
+                "type": "boolean",
+                "description": "User's verification status (true/false)"
+              }
+            }
           }
         },
         "example": {
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTIzNDU2Nzg5IiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
           "user": {
-            "gender": "male",
+            "id": "123456789",
             "name": "John Doe",
             "email": "example@gmail.com",
+            "gender": "male",
             "weight": 70,
             "activeTimeSports": 5,
             "waterDrink": 2,
-            "avatarURL": "//www.gravatar.com/avatar/c951f1265ed645cea2c372ecd9672f5f"
+            "avatarURL": "//www.gravatar.com/avatar/c951f1265ed645cea2c372ecd9672f5f",
+            "verify": true
           }
         }
       },
       "GetCurrentResponse": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "userId": {
-              "$ref": "#/components/examples/users/userId"
-            },
-            "name": {
-              "$ref": "#/components/examples/users/name"
-            },
-            "email": {
-              "$ref": "#/components/examples/users/email"
-            },
-            "token": {
-              "$ref": "#/components/examples/users/token"
-            },
-            "gender": {
-              "$ref": "#/components/examples/users/gender"
-            },
-            "weight": {
-              "$ref": "#/components/examples/users/weight"
-            },
-            "waterDrink": {
-              "$ref": "#/components/examples/users/waterDrink"
-            },
-            "activeTimeSports": {
-              "$ref": "#/components/examples/users/activeTimeSports"
-            },
-            "avatarURL": {
-              "$ref": "#/components/examples/users/avatarURL"
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT token for authentication"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "User's ID"
+              },
+              "name": {
+                "type": "string",
+                "description": "User's name"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "description": "User's email address"
+              },
+              "gender": {
+                "$ref": "#/components/examples/users/gender",
+                "description": "User's gender"
+              },
+              "weight": {
+                "$ref": "#/components/examples/users/weight",
+                "description": "User's weight"
+              },
+              "activeTimeSports": {
+                "$ref": "#/components/examples/users/activeTimeSports",
+                "description": "User's active time in sports (hours per day)"
+              },
+              "waterDrink": {
+                "$ref": "#/components/examples/users/waterDrink",
+                "description": "User's daily water intake (liters)"
+              },
+              "avatarURL": {
+                "$ref": "#/components/examples/users/avatarURL",
+                "description": "URL to user's avatar image"
+              },
+              "verify": {
+                "type": "boolean",
+                "description": "User's verification status (true/false)"
+              }
             }
           }
-        }
-      },
-      "GetRefreshCurrentResponse": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "userId": {
-              "$ref": "#/components/examples/users/userId"
-            },
-            "name": {
-              "$ref": "#/components/examples/users/name"
-            },
-            "email": {
-              "$ref": "#/components/examples/users/email"
-            },
-            "token": {
-              "$ref": "#/components/examples/users/token"
-            },
-            "gender": {
-              "$ref": "#/components/examples/users/gender"
-            },
-            "weight": {
-              "$ref": "#/components/examples/users/weight"
-            },
-            "waterDrink": {
-              "$ref": "#/components/examples/users/waterDrink"
-            },
-            "activeTimeSports": {
-              "$ref": "#/components/examples/users/activeTimeSports"
-            },
-            "avatarURL": {
-              "$ref": "#/components/examples/users/avatarURL"
-            }
+        },
+        "example": {
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTIzNDU2Nzg5IiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+          "user": {
+            "id": "123456789",
+            "name": "John Doe",
+            "email": "example@gmail.com",
+            "gender": "male",
+            "weight": 70,
+            "activeTimeSports": 5,
+            "waterDrink": 2,
+            "avatarURL": "//www.gravatar.com/avatar/c951f1265ed645cea2c372ecd9672f5f",
+            "verify": true
           }
         }
       },
@@ -711,85 +671,63 @@
         }
       },
       "UpdateRequest": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "$ref": "#/components/examples/users/name"
-            },
-            "email": {
-              "$ref": "#/components/examples/users/email"
-            },
-            "gender": {
-              "$ref": "#/components/examples/users/gender"
-            },
-            "weight": {
-              "$ref": "#/components/examples/users/weight"
-            },
-            "waterDrink": {
-              "$ref": "#/components/examples/users/waterDrink"
-            },
-            "activeTimeSports": {
-              "$ref": "#/components/examples/users/activeTimeSports"
-            },
-            "avatarURL": {
-              "$ref": "#/components/examples/users/avatarURL"
-            }
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/examples/users/name"
+          },
+          "email": {
+            "$ref": "#/components/examples/users/email"
+          },
+          "gender": {
+            "$ref": "#/components/examples/users/gender"
+          },
+          "weight": {
+            "$ref": "#/components/examples/users/weight"
+          },
+          "waterDrink": {
+            "$ref": "#/components/examples/users/waterDrink"
+          },
+          "activeTimeSports": {
+            "$ref": "#/components/examples/users/activeTimeSports"
+          },
+          "avatarURL": {
+            "$ref": "#/components/examples/users/avatarURL"
           }
         }
       },
       "UpdateResponse": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "$ref": "#/components/examples/users/name"
-            },
-            "email": {
-              "$ref": "#/components/examples/users/email"
-            },
-            "gender": {
-              "$ref": "#/components/examples/users/gender"
-            },
-            "weight": {
-              "$ref": "#/components/examples/users/weight"
-            },
-            "waterDrink": {
-              "$ref": "#/components/examples/users/waterDrink"
-            },
-            "activeTimeSports": {
-              "$ref": "#/components/examples/users/activeTimeSports"
-            },
-            "avatarURL": {
-              "$ref": "#/components/examples/users/avatarURL"
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message indicating the update status"
+          },
+          "value": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "$ref": "#/components/examples/users/name"
+              },
+              "email": {
+                "$ref": "#/components/examples/users/email"
+              },
+              "gender": {
+                "$ref": "#/components/examples/users/gender"
+              },
+              "weight": {
+                "$ref": "#/components/examples/users/weight"
+              },
+              "waterDrink": {
+                "$ref": "#/components/examples/users/waterDrink"
+              },
+              "activeTimeSports": {
+                "$ref": "#/components/examples/users/activeTimeSports"
+              },
+              "avatarURL": {
+                "$ref": "#/components/schemas/AvatarUpdateResponse"
+              }
             }
-          }
-        }
-      },
-      "VerifyByEmailResponse": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "$ref": "#/components/examples/users/messageVerify"
-          }
-        }
-      },
-      "VerifyResendRequest": {
-        "type": "object",
-        "required": ["true"],
-        "properties": {
-          "email": {
-            "$ref": "#/components/examples/users/email"
-          }
-        }
-      },
-      "VerifyResendResponse": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "$ref": "#/components/examples/users/messageVerify"
           }
         }
       },
@@ -897,31 +835,28 @@
         }
       },
       "GetDailyWaterResponse": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string",
-              "description": "Entry ID",
-              "example": "64b1e25f6b0a2ccb95591ec7"
-            },
-            "date": {
-              "type": "string",
-              "format": "date",
-              "description": "Entry date",
-              "example": "2024-06-26"
-            },
-            "volume": {
-              "type": "number",
-              "description": "Volume of water in liters",
-              "example": 1.5
-            },
-            "user": {
-              "type": "string",
-              "description": "User ID",
-              "example": "64b1e25f6b0a2ccb95591ec7"
-            }
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Entry ID",
+            "example": "64b1e25f6b0a2ccb95591ec7"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Entry date",
+            "example": "2024-06-26"
+          },
+          "volume": {
+            "type": "number",
+            "description": "Volume of water in liters",
+            "example": 1.5
+          },
+          "user": {
+            "type": "string",
+            "description": "User ID",
+            "example": "64b1e25f6b0a2ccb95591ec7"
           }
         }
       },
@@ -966,6 +901,11 @@
           "type": "string",
           "description": "User's password",
           "example": "qwerty123"
+        },
+        "verificationToken": {
+          "type": "string",
+          "description": "User's verificationToken",
+          "example": "Abcd1234"
         },
         "token": {
           "type": "string",
@@ -1021,6 +961,11 @@
           "type": "string",
           "description": "Verifying success",
           "example": "Verifying success"
+        },
+        "verify": {
+          "type": "boolean",
+          "description": "User's verifying",
+          "example": true
         }
       }
     },

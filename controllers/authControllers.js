@@ -36,12 +36,18 @@ export async function register(req, res, next) {
     const avatarURL = gravatar.url(email);
     const verificationToken = crypto.randomUUID();
     const verificationLink = `${BASE_URL}/api/users/verify/${verificationToken}`;
+    const token = jwt.sign(
+      { password: password, email: email },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
 
     const postNewUser = await User.create({
       email,
       password: passwordHash,
       avatarURL,
       verificationToken,
+      token,
     });
 
     const msg = {
@@ -60,7 +66,7 @@ export async function register(req, res, next) {
       });
 
     res.status(201).json({
-      // token,
+      token,
       user: {
         email: postNewUser.email,
       },
@@ -129,8 +135,15 @@ export async function current(req, res, next) {
     if (!user) {
       return res.status(401).send("Not authorized");
     }
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
     res.status(200).json({
+      token,
       user: {
+        id: user._id,
         name: user.name,
         email: user.email,
         gender: user.gender,
@@ -170,8 +183,12 @@ export async function verifyEmail(req, res, next) {
     );
 
     const redirectUrl =
-      `http://localhost:5173/tracker?token=${token}` ||
-      `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
+      "http://localhost:5173/signin" ||
+      "https://aquatrack-front-1.vercel.api/signin";
+
+    // const redirectUrl =
+    //   `http://localhost:5173/tracker?token=${token}` ||
+    //   `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
     res.redirect(redirectUrl);
   } catch (error) {
     res.status(500).json({ message: error.message });

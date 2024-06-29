@@ -77,7 +77,7 @@ export const updDataUserSchema = (req, res, next) => {
     },
     waterDrink: {
       type: Number,
-      default: 1.8,
+      // default: 1.8,
     },
   });
   const { error } = schema.validate(req.body);
