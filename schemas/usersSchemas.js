@@ -65,7 +65,7 @@ export const updDataUserSchema = (req, res, next) => {
     },
     gender: {
       type: String,
-      enum: ["Woman", "Man"],
+      enum: ["woman", "man"],
     },
     weight: {
       type: Number,
@@ -106,7 +106,7 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ["unknown", "Woman", "Man"],
+      enum: ["unknown", "woman", "man"],
       default: "unknown",
     },
     weight: {
