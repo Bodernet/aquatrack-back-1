@@ -17,12 +17,12 @@ const waterRouter = express.Router();
 
 waterRouter.post(
   "/",
-  // addWaterSchema,
+  addWaterSchema,
   addWater
 );
 waterRouter.patch(
   "/:id",
-  // updateWaterSchema,
+  updateWaterSchema,
   updateWater
 );
 waterRouter.delete("/:id", deleteWater);
