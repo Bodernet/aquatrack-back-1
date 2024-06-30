@@ -250,8 +250,19 @@
     "/users/avatars": {
       "patch": {
         "tags": ["Users"],
-        "summary": "Update user avatar",
+        "summary": "User's avatar",
         "security": [{ "Bearer": [] }],
+        "requestBody": {
+          "description": "Object to add  avatar",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvatarUpdateRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful update of user avatar",
@@ -515,7 +526,6 @@
           }
         }
       },
-
       "VerifyByEmailResponse": {
         "type": "object",
         "properties": {
@@ -732,6 +742,14 @@
                 "$ref": "#/components/schemas/AvatarUpdateResponse"
               }
             }
+          }
+        }
+      },
+      "AvatarUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "avatarURL": {
+            "$ref": "#/components/examples/users/avatarURL"
           }
         }
       },
