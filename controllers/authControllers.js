@@ -69,43 +69,32 @@ export async function register(req, res, next) {
     res.status(500).json({ message: error.message });
   }
 }
+
 export async function login(req, res, next) {
   try {
-    console.log("Login request received", req.body);
-
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    console.log("User found:", user);
-
     if (user === null) {
-      console.log("User not found");
       return res.status(401).send({ message: "Email or password is wrong" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log("Password match:", isMatch);
 
     if (isMatch === false) {
-      console.log("Password does not match");
       return res.status(401).send({ message: "Email or password is wrong" });
     }
 
     if (user.verify === false) {
-      console.log("User not verified");
       return res.status(404).send({ message: "User not found" });
     }
-
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
-    console.log("JWT token created:", token);
 
     await User.findByIdAndUpdate(user._id, { token }, { new: true });
-    console.log("User updated with token");
-
     res.status(200).json({
       token,
       user: {
@@ -120,55 +109,10 @@ export async function login(req, res, next) {
         verify: user.verify,
       },
     });
-    console.log("Login response sent");
   } catch (error) {
-    console.error("Error during login:", error);
     res.status(500).json({ message: error.message });
   }
 }
-// export async function login(req, res, next) {
-//   try {
-//     const { email, password } = req.body;
-
-//     const user = await User.findOne({ email });
-//     if (user === null) {
-//       return res.status(401).send({ message: "Email or password is wrong" });
-//     }
-
-//     const isMatch = await bcrypt.compare(password, user.password);
-
-//     if (isMatch === false) {
-//       return res.status(401).send({ message: "Email or password is wrong" });
-//     }
-
-//     if (user.verify === false) {
-//       return res.status(404).send({ message: "User not found" });
-//     }
-//     const token = jwt.sign(
-//       { id: user._id, email: user.email },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "24h" }
-//     );
-
-//     await User.findByIdAndUpdate(user._id, { token }, { new: true });
-//     res.status(200).json({
-//       token,
-//       user: {
-//         id: user._id,
-//         name: user.name,
-//         email: user.email,
-//         gender: user.gender,
-//         weight: user.weight,
-//         activeTimeSports: user.activeTimeSports,
-//         waterDrink: user.waterDrink,
-//         avatarURL: user.avatarURL,
-//         verify: user.verify,
-//       },
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// }
 
 export async function logout(req, res, next) {
   try {
