@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import crypto from "node:crypto";
-import { User } from "../schemas/usersSchemas.js";
+import crypto, { verify } from "node:crypto";
+import { User, registerSchema } from "../schemas/usersSchemas.js";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 import generator from "generate-password";
@@ -125,7 +125,9 @@ export async function logout(req, res, next) {
 
 export async function current(req, res, next) {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const { user, token } = await User.findById(req.user.id).select(
+      "-password"
+    );
     if (!user) {
       return res.status(401).send("Not authorized");
     }
@@ -134,8 +136,10 @@ export async function current(req, res, next) {
     //   process.env.JWT_SECRET,
     //   { expiresIn: "24h" }
     // );
+
+    console.log(token);
     res.status(200).json({
-      // token,
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -160,14 +164,15 @@ export async function verifyEmail(req, res, next) {
     if (!user) {
       return res.status(404).json("User not found");
     }
-    const token = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
+    // const token = jwt.sign(
+    //   { id: user._id, email: user.email },
+    //   process.env.JWT_SECRET,
+    //   { expiresIn: "24h" }
+    // );
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
-      { $set: { token, verify: true, verificationToken: null } },
+      // { $set: { token, verify: true, verificationToken: null } },
+      { $set: { verify: true, verificationToken: null } },
       { new: true }
     );
 
@@ -176,8 +181,8 @@ export async function verifyEmail(req, res, next) {
     }
 
     const redirectUrl =
-      // `http://localhost:5173/signin` ||
-      `https://aquatrack-front-1.vercel.api/signin`;
+      "http://localhost:5173/signin" ||
+      "https://aquatrack-front-1.vercel.api/signin";
 
     // const redirectUrl =
     //   `http://localhost:5173/tracker?token=${token}` ||
@@ -391,10 +396,8 @@ export const googleRedirect = async (req, res, next) => {
     const avatarURL = userData.data.picture;
 
     let user = await User.findOne({ email });
-    let password;
     if (!user) {
-      password = crypto.randomUUID();
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(crypto.randomUUID(), 10);
       user = new User({
         email,
         name,
@@ -406,21 +409,6 @@ export const googleRedirect = async (req, res, next) => {
         verificationToken: null,
       });
       await user.save();
-      const msg = {
-        to: email,
-        from: "aanytkaa@gmail.com",
-        subject: "Welcome to Agua track",
-        html: `Congratulations, you have received a new password: ${password}`,
-        text: `Congratulations, you have received a new password: ${password}`,
-      };
-      sgMail
-        .send(msg)
-        .then(() => {
-          console.log("Email sent");
-        })
-        .catch((error) => {
-          console.error(error);
-        });
     } else {
       user = await User.findOneAndUpdate(
         { email },
@@ -437,12 +425,9 @@ export const googleRedirect = async (req, res, next) => {
     const { token, refreshToken } = await tokenServices.generateToken(payload);
     await tokenServices.saveToken(user._id, refreshToken);
     await User.findByIdAndUpdate(user._id, { token }, { new: true });
-    const redirectUrl =
-      // `http://localhost:5173/tracker` ||
-      `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
     res
       .cookie("refreshToken", refreshToken, cookieConfig)
-      .redirect(redirectUrl);
+      .redirect(`${process.env.FRONTEND_URL}/tracker?token=${token}`);
   } catch (error) {
     next(error);
   }
