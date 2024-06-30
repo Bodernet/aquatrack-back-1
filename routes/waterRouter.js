@@ -22,7 +22,7 @@ waterRouter.post(
 );
 waterRouter.patch(
   "/:id",
-  updateWaterSchema,
+  // updateWaterSchema,
   updateWater
 );
 waterRouter.delete("/:id", deleteWater);
