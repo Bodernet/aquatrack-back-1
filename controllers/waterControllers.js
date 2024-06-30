@@ -53,7 +53,10 @@ export const deleteWater = async (req, res) => {
       return res.status(404).json({ message: "Entry not found" });
     }
 
-    res.status(200).json({ message: "Entry deleted successfully" });
+    res.status(200).json({
+      message: "Entry deleted successfully",
+      id: deletedWaterEntry._id,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
