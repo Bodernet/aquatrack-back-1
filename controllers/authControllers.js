@@ -175,13 +175,13 @@ export async function verifyEmail(req, res, next) {
       return res.status(500).json("Failed to update user");
     }
 
-    const redirectUrl =
-      "http://localhost:5173/signin" ||
-      "https://aquatrack-front-1.vercel.api/signin";
-
     // const redirectUrl =
-    //   `http://localhost:5173/tracker?token=${token}` ||
-    //   `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
+    //   "http://localhost:5173/signin" ||
+    //   "https://aquatrack-front-1.vercel.api/signin";
+
+    const redirectUrl =
+      `http://localhost:5173/tracker?token=${token}` ||
+      `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
     res.redirect(redirectUrl);
   } catch (error) {
     res.status(500).json({ message: error.message });
