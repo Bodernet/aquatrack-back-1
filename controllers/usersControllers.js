@@ -25,10 +25,20 @@ export const updDataUser = async (req, res) => {
     if (error) {
       return res.status(400).json({ message: error.message });
     }
-    await User.findByIdAndUpdate(req.user.id, value, { new: true });
+    await User.findByIdAndUpdate(req.user.id, { new: true });
     res.status(200).json({
       message: "Update successful",
-      value,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        gender: user.gender,
+        weight: user.weight,
+        activeTimeSports: user.activeTimeSports,
+        waterDrink: user.waterDrink,
+        avatarURL: user.avatarURL,
+        verify: user.verify,
+      },
     });
   } catch (error) {
     console.error("Error updating:", error);

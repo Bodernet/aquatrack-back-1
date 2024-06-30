@@ -177,7 +177,7 @@ export async function verifyEmail(req, res, next) {
 
     const redirectUrl =
       // `http://localhost:5173/signin` ||
-      `https://aquatrack-front-1.vercel.api/signin`;
+      `https://aquatrack-front-1.vercel.app/signin`;
 
     // const redirectUrl =
     //   `http://localhost:5173/tracker?token=${token}` ||
@@ -439,7 +439,7 @@ export const googleRedirect = async (req, res, next) => {
     await User.findByIdAndUpdate(user._id, { token }, { new: true });
     const redirectUrl =
       // `http://localhost:5173/tracker` ||
-      `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
+      `https://aquatrack-front-1.vercel.app/tracker?token=${token}`;
     res
       .cookie("refreshToken", refreshToken, cookieConfig)
       .redirect(redirectUrl);
