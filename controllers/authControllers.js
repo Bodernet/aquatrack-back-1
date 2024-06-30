@@ -175,9 +175,7 @@ export async function verifyEmail(req, res, next) {
       return res.status(500).json("Failed to update user");
     }
 
-    const redirectUrl =
-      // `http://localhost:5173/signin` ||
-      `https://aquatrack-front-1.vercel.app/signin`;
+    const redirectUrl = `${process.env.FRONTEND_URL}/signin`;
 
     // const redirectUrl =
     //   `http://localhost:5173/tracker?token=${token}` ||
@@ -437,9 +435,7 @@ export const googleRedirect = async (req, res, next) => {
     const { token, refreshToken } = await tokenServices.generateToken(payload);
     await tokenServices.saveToken(user._id, refreshToken);
     await User.findByIdAndUpdate(user._id, { token }, { new: true });
-    const redirectUrl =
-      // `http://localhost:5173/tracker` ||
-      `https://aquatrack-front-1.vercel.app/tracker?token=${token}`;
+    const redirectUrl = `${process.env.FRONTEND_URL}/signin`;
     res
       .cookie("refreshToken", refreshToken, cookieConfig)
       .redirect(redirectUrl);
