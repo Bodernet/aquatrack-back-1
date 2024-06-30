@@ -1,0 +1,155 @@
+{
+  "/users/current/refresh": {
+    "get": {
+      "tags": ["Users"],
+      "summary": "Refresh user's token",
+      "security": [{ "Bearer": [] }],
+      "responses": {
+        "200": {
+          "description": "Successful refresh current user's token",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetRefreshCurrentResponse"
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Unauthorized"
+        },
+        "404": {
+          "description": "Service not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  },
+  "VerifyResendRequest": {
+    "type": "object",
+    "required": ["email"],
+    "properties": {
+      "email": {
+        "type": "string",
+        "description": "User's email address"
+      }
+    }
+  },
+  "VerifyResendResponse": {
+    "type": "object",
+    "properties": {
+      "message": {
+        "$ref": "#/components/examples/users/messageVerify"
+      }
+    }
+  },
+  "GetRefreshCurrentResponse": {
+    "type": "object",
+    "properties": {
+      "token": {
+        "type": "string",
+        "description": "JWT token for authentication"
+      },
+      "user": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User's ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address"
+          },
+          "gender": {
+            "$ref": "#/components/examples/users/gender",
+            "description": "User's gender"
+          },
+          "weight": {
+            "$ref": "#/components/examples/users/weight",
+            "description": "User's weight"
+          },
+          "activeTimeSports": {
+            "$ref": "#/components/examples/users/activeTimeSports",
+            "description": "User's active time in sports (hours per day)"
+          },
+          "waterDrink": {
+            "$ref": "#/components/examples/users/waterDrink",
+            "description": "User's daily water intake (liters)"
+          },
+          "avatarURL": {
+            "$ref": "#/components/examples/users/avatarURL",
+            "description": "URL to user's avatar image"
+          },
+          "verify": {
+            "type": "boolean",
+            "description": "User's verification status (true/false)"
+          }
+        }
+      }
+    },
+    "example": {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTIzNDU2Nzg5IiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+      "user": {
+        "id": "123456789",
+        "name": "John Doe",
+        "email": "example@gmail.com",
+        "gender": "male",
+        "weight": 70,
+        "activeTimeSports": 5,
+        "waterDrink": 2,
+        "avatarURL": "//www.gravatar.com/avatar/c951f1265ed645cea2c372ecd9672f5f",
+        "verify": true
+      }
+    }
+  },
+
+  "/users/verify": {
+    "post": {
+      "tags": ["Users"],
+      "summary": "Verify resend",
+      "requestBody": {
+        "description": "Verify resend request",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/VerifyResendRequest"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Successful verifyid",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyResendResponse"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request (invalid request body)"
+        },
+        "401": {
+          "description": "Verification failed"
+        },
+        "404": {
+          "description": "Service not found"
+        },
+        "500": {
+          "description": "Server error"
+        }
+      }
+    }
+  }
+}
