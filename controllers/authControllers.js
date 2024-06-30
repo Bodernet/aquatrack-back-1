@@ -176,8 +176,8 @@ export async function verifyEmail(req, res, next) {
     }
 
     const redirectUrl =
-      "http://localhost:5173/signin" ||
-      "https://aquatrack-front-1.vercel.app/signin";
+      "http://localhost:5173/tracker" ||
+      "https://aquatrack-front-1.vercel.app/tracker";
 
     // const redirectUrl =
     //   `http://localhost:5173/tracker?token=${token}` ||
