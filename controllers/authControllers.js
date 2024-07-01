@@ -62,7 +62,6 @@ export async function register(req, res, next) {
       });
 
     res.status(201).json({
-      // token,
       user: {
         email: postNewUser.email,
       },
@@ -175,23 +174,13 @@ export async function countUsers(req, res, next) {
   }
 }
 
-// in progres
-
 export async function current(req, res, next) {
   try {
-    const { user, token } = await User.findById(req.user.id).select(
-      "-password"
-    );
+    const user = await User.findById(req.user.id.toString());
+    const { token } = await User.findById(req.user.id.toString());
     if (!user) {
       return res.status(401).send("Not authorized");
     }
-    // const token = jwt.sign(
-    //   { id: user._id, email: user.email },
-    //   process.env.JWT_SECRET,
-    //   { expiresIn: "24h" }
-    // );
-
-    console.log(token);
     res.status(200).json({
       token,
       user: {
@@ -210,6 +199,8 @@ export async function current(req, res, next) {
     res.status(500).json({ message: "Server error" });
   }
 }
+
+// in progres
 
 export const googleAuth = async (req, res, next) => {
   try {
