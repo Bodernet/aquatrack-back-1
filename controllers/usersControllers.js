@@ -8,43 +8,40 @@ import { v2 as cloudinary } from "cloudinary";
 // done
 
 export const updDataUser = async (req, res) => {
-  console.log(req.user.id);
+  const id = req.user.id.toString();
 
   try {
-    const { token } = await User.findById(req.user.id.toString());
-    const {
-      email,
-      name,
-      gender,
-      weight,
-      activeTimeSports,
-      waterDrink,
-      avatarURL,
-    } = req.body;
+    const dataToUpdate = { ...req.body };
+    if (dataToUpdate.weight === null) dataToUpdate.weight = 0;
+    if (dataToUpdate.activeTimeSports === null)
+      dataToUpdate.activeTimeSports = 0;
 
-    const userPosted = await User.findById(req.user.id);
-
-    if (!userPosted) {
-      return res.status(401).json({ message: "Update unsuccessful." });
-    }
-    const userData = {
-      email,
-      name: name ? name.trim() : "",
-      gender,
-      weight,
-      activeTimeSports,
-      waterDrink,
-      avatarURL,
-    };
-
-    const user = updateUserSchema.validate(userData);
-
-    if (!user) {
+    const { error, value } = updateUserSchema.validate(dataToUpdate);
+    if (error) {
       return res.status(400).json({ message: error.message });
     }
 
-    await User.findByIdAndUpdate(req.user.id, { new: true });
-    res.status(200).json(user);
+    const updatedUser = await User.findByIdAndUpdate(id, value, {
+      new: true,
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.status(200).json({
+      message: "Update successful",
+      user: {
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        gender: updatedUser.gender,
+        weight: updatedUser.weight,
+        activeTimeSports: updatedUser.activeTimeSports,
+        waterDrink: updatedUser.waterDrink,
+        avatarURL: updatedUser.avatarURL,
+      },
+    });
   } catch (error) {
     console.error("Error updating:", error);
     res.status(500).json({ message: "Server error" });
