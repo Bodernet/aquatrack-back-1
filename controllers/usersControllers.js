@@ -5,12 +5,26 @@ import { User } from "../schemas/usersSchemas.js";
 import { updateUserSchema } from "../schemas/usersSchemas.js";
 import { v2 as cloudinary } from "cloudinary";
 
+// done
+
 export const updDataUser = async (req, res) => {
+  console.log(req.user.id);
+
   try {
-    const { email, name, gender, weight, activeTimeSports, waterDrink } =
-      req.body;
-    const user = await User.findById(req.user.id);
-    if (!user) {
+    const { token } = await User.findById(req.user.id.toString());
+    const {
+      email,
+      name,
+      gender,
+      weight,
+      activeTimeSports,
+      waterDrink,
+      avatarURL,
+    } = req.body;
+
+    const userPosted = await User.findById(req.user.id);
+
+    if (!userPosted) {
       return res.status(401).json({ message: "Update unsuccessful." });
     }
     const userData = {
@@ -20,21 +34,57 @@ export const updDataUser = async (req, res) => {
       weight,
       activeTimeSports,
       waterDrink,
+      avatarURL,
     };
-    const { error, value } = updateUserSchema.validate(userData);
-    if (error) {
+
+    const user = updateUserSchema.validate(userData);
+
+    if (!user) {
       return res.status(400).json({ message: error.message });
     }
-    await User.findByIdAndUpdate(req.user.id, value, { new: true });
-    res.status(200).json({
-      message: "Update successful",
-      value,
-    });
+
+    await User.findByIdAndUpdate(req.user.id, { new: true });
+    res.status(200).json(user);
   } catch (error) {
     console.error("Error updating:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export async function updAvatar(req, res, next) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "You must add a file" });
+    }
+    const newPath = path.resolve("public", "avatars", req.file.filename);
+    const avaURL = path.join("avatars", req.file.filename);
+    Jimp.read(req.file.path)
+      .then((file) => {
+        return file.resize(200, 200).quality(60).write(newPath);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
+    await fs.rename(req.file.path, newPath);
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatarURL: avaURL },
+      { new: true }
+    );
+    if (user) {
+      res.status(200).json({
+        avatarURL: user.avatarURL,
+      });
+    } else {
+      return res.status(404).json("Not found");
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+// planned
 
 // export async function updAvatar(req, res, next) {
 //   cloudinary.config({
@@ -74,36 +124,3 @@ export const updDataUser = async (req, res) => {
 //     res.status(500).json({ message: error.message });
 //   }
 // }
-
-export async function updAvatar(req, res, next) {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "You must add a file" });
-    }
-    const newPath = path.resolve("public", "avatars", req.file.filename);
-    const avaURL = path.join("avatars", req.file.filename);
-    Jimp.read(req.file.path)
-      .then((file) => {
-        return file.resize(200, 200).quality(60).write(newPath);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-
-    await fs.rename(req.file.path, newPath);
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { avatarURL: avaURL },
-      { new: true }
-    );
-    if (user) {
-      res.status(200).json({
-        avatarURL: user.avatarURL,
-      });
-    } else {
-      return res.status(404).json("Not found");
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-}

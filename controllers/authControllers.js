@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import crypto from "node:crypto";
-import { User } from "../schemas/usersSchemas.js";
+import crypto, { verify } from "node:crypto";
+import { User, registerSchema } from "../schemas/usersSchemas.js";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 import generator from "generate-password";
@@ -18,6 +18,8 @@ const cookieConfig = {
   sameSite: "none",
   secure: true,
 };
+
+// done
 
 export async function register(req, res, next) {
   try {
@@ -60,7 +62,6 @@ export async function register(req, res, next) {
       });
 
     res.status(201).json({
-      // token,
       user: {
         email: postNewUser.email,
       },
@@ -123,19 +124,65 @@ export async function logout(req, res, next) {
   }
 }
 
-export async function current(req, res, next) {
+export async function verifyEmail(req, res, next) {
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const { verificationToken } = req.params;
+    const user = await User.findOne({ verificationToken });
     if (!user) {
-      return res.status(401).send("Not authorized");
+      return res.status(404).json("User not found");
     }
     // const token = jwt.sign(
     //   { id: user._id, email: user.email },
     //   process.env.JWT_SECRET,
     //   { expiresIn: "24h" }
     // );
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      // { $set: { token, verify: true, verificationToken: null } },
+      { $set: { verify: true, verificationToken: null } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(500).json("Failed to update user");
+    }
+
+    const redirectUrl = `${process.env.FRONTEND_URL}/signin`;
+
+    // const redirectUrl =
+    //   `http://localhost:5173/tracker?token=${token}` ||
+    //   `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
+    res.redirect(redirectUrl);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export async function countUsers(req, res, next) {
+  try {
+    const totalCount = await User.countDocuments();
+    const users = await User.aggregate([
+      { $sample: { size: 3 } },
+      { $project: { avatarURL: 1, _id: 0 } },
+    ]);
+    res.json({
+      userCount: totalCount,
+      userAvatars: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function current(req, res, next) {
+  try {
+    const user = await User.findById(req.user.id.toString());
+    const { token } = await User.findById(req.user.id.toString());
+    if (!user) {
+      return res.status(401).send("Not authorized");
+    }
     res.status(200).json({
-      // token,
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -153,40 +200,102 @@ export async function current(req, res, next) {
   }
 }
 
-export async function verifyEmail(req, res, next) {
+// in progres
+
+export const googleAuth = async (req, res, next) => {
   try {
-    const { verificationToken } = req.params;
-    const user = await User.findOne({ verificationToken });
-    if (!user) {
-      return res.status(404).json("User not found");
-    }
-    const token = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      { $set: { token, verify: true, verificationToken: null } },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(500).json("Failed to update user");
-    }
-
-    const redirectUrl =
-      `http://localhost:5173/signin` ||
-      `https://aquatrack-front-1.vercel.app/signin`;
-
-    // const redirectUrl =
-    //   `http://localhost:5173/tracker?token=${token}` ||
-    //   `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
+    const clientId = process.env.GOOGLE_CLOUD_ID;
+    const redirectUri = `${process.env.BASE_URL}/api/users/google-redirect`;
+    const scope = [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile",
+    ].join(" ");
+    const stringifiedParams = queryString.stringify({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: scope,
+      response_type: "code",
+      access_type: "offline",
+      prompt: "consent",
+    });
+    const redirectUrl = `https://accounts.google.com/o/oauth2/v2/auth?${stringifiedParams}`;
     res.redirect(redirectUrl);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
-}
+};
+
+export const googleRedirect = async (req, res, next) => {
+  try {
+    const fullUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
+    const urlObj = new URL(fullUrl);
+    const urlParams = queryString.parse(urlObj.search);
+    const code = urlParams.code;
+
+    const tokenData = await axios({
+      url: `https://oauth2.googleapis.com/token`,
+      method: "post",
+      data: {
+        client_id: process.env.GOOGLE_CLOUD_ID,
+        client_secret: process.env.GOOGLE_CLOUD_SECRET_KEY,
+        redirect_uri: `${process.env.BASE_URL}/api/users/google-redirect`,
+        grant_type: "authorization_code",
+        code,
+      },
+    });
+
+    const userData = await axios({
+      url: "https://www.googleapis.com/oauth2/v2/userinfo",
+      method: "get",
+      headers: {
+        Authorization: `Bearer ${tokenData.data.access_token}`,
+      },
+    });
+    const email = userData.data.email;
+    const name = userData.data.given_name;
+    const googleId = userData.data.id;
+    const avatarURL = userData.data.picture;
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      const hashedPassword = await bcrypt.hash(crypto.randomUUID(), 10);
+      user = new User({
+        email,
+        name,
+        password: hashedPassword,
+        avatarURL,
+        googleId,
+        displayName: userData.data.name,
+        verify: true,
+        verificationToken: null,
+      });
+      await user.save();
+    } else {
+      user = await User.findOneAndUpdate(
+        { email },
+        {
+          displayName: userData.data.name,
+          googleId,
+          verify: true,
+          verificationToken: null,
+        },
+        { new: true }
+      );
+    }
+    const payload = { id: user._id, email: user.email };
+    const { token, refreshToken } = await tokenServices.generateToken(payload);
+    await tokenServices.saveToken(user._id, refreshToken);
+    await User.findByIdAndUpdate(user._id, { token }, { new: true });
+    const redirectUrl = `${process.env.FRONTEND_URL}/signin`;
+    res
+      .cookie("refreshToken", refreshToken, cookieConfig)
+      .redirect(`${process.env.FRONTEND_URL}/tracker?token=${token}`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// planed
 
 export async function resendVerificationEmail(req, res, next) {
   try {
@@ -319,131 +428,3 @@ export async function updateCustomPassword(req, res, next) {
     res.status(500).json({ message: error.message });
   }
 }
-
-export async function countUsers(req, res, next) {
-  try {
-    const totalCount = await User.countDocuments();
-    const users = await User.aggregate([
-      { $sample: { size: 3 } },
-      { $project: { avatarURL: 1, _id: 0 } },
-    ]);
-    res.json({
-      userCount: totalCount,
-      userAvatars: users,
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
-export const googleAuth = async (req, res, next) => {
-  try {
-    const clientId = process.env.GOOGLE_CLOUD_ID;
-    const redirectUri = `${process.env.BASE_URL}/api/users/google-redirect`;
-    const scope = [
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile",
-    ].join(" ");
-    const stringifiedParams = queryString.stringify({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      scope: scope,
-      response_type: "code",
-      access_type: "offline",
-      prompt: "consent",
-    });
-    const redirectUrl = `https://accounts.google.com/o/oauth2/v2/auth?${stringifiedParams}`;
-    res.redirect(redirectUrl);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const googleRedirect = async (req, res, next) => {
-  try {
-    const fullUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
-    const urlObj = new URL(fullUrl);
-    const urlParams = queryString.parse(urlObj.search);
-    const code = urlParams.code;
-
-    const tokenData = await axios({
-      url: `https://oauth2.googleapis.com/token`,
-      method: "post",
-      data: {
-        client_id: process.env.GOOGLE_CLOUD_ID,
-        client_secret: process.env.GOOGLE_CLOUD_SECRET_KEY,
-        redirect_uri: `${process.env.BASE_URL}/api/users/google-redirect`,
-        grant_type: "authorization_code",
-        code,
-      },
-    });
-
-    const userData = await axios({
-      url: "https://www.googleapis.com/oauth2/v2/userinfo",
-      method: "get",
-      headers: {
-        Authorization: `Bearer ${tokenData.data.access_token}`,
-      },
-    });
-    const email = userData.data.email;
-    const name = userData.data.given_name;
-    const googleId = userData.data.id;
-    const avatarURL = userData.data.picture;
-
-    let user = await User.findOne({ email });
-    let password;
-    if (!user) {
-      password = crypto.randomUUID();
-      const hashedPassword = await bcrypt.hash(password, 10);
-      user = new User({
-        email,
-        name,
-        password: hashedPassword,
-        avatarURL,
-        googleId,
-        displayName: userData.data.name,
-        verify: true,
-        verificationToken: null,
-      });
-      await user.save();
-      const msg = {
-        to: email,
-        from: "aanytkaa@gmail.com",
-        subject: "Welcome to Agua track",
-        html: `Congratulations, you have received a new password: ${password}`,
-        text: `Congratulations, you have received a new password: ${password}`,
-      };
-      sgMail
-        .send(msg)
-        .then(() => {
-          console.log("Email sent");
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    } else {
-      user = await User.findOneAndUpdate(
-        { email },
-        {
-          displayName: userData.data.name,
-          googleId,
-          verify: true,
-          verificationToken: null,
-        },
-        { new: true }
-      );
-    }
-    const payload = { id: user._id, email: user.email };
-    const { token, refreshToken } = await tokenServices.generateToken(payload);
-    await tokenServices.saveToken(user._id, refreshToken);
-    await User.findByIdAndUpdate(user._id, { token }, { new: true });
-    const redirectUrl =
-      `http://localhost:5173/signin` ||
-      `https://aquatrack-front-1.vercel.app/signin`;
-    res
-      .cookie("refreshToken", refreshToken, cookieConfig)
-      .redirect(redirectUrl);
-  } catch (error) {
-    next(error);
-  }
-};
