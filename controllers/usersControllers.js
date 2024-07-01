@@ -5,6 +5,8 @@ import { User } from "../schemas/usersSchemas.js";
 import { updateUserSchema } from "../schemas/usersSchemas.js";
 import { v2 as cloudinary } from "cloudinary";
 
+// done
+
 export const updDataUser = async (req, res) => {
   try {
     const { email, name, gender, weight, activeTimeSports, waterDrink } =
@@ -46,6 +48,41 @@ export const updDataUser = async (req, res) => {
   }
 };
 
+export async function updAvatar(req, res, next) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "You must add a file" });
+    }
+    const newPath = path.resolve("public", "avatars", req.file.filename);
+    const avaURL = path.join("avatars", req.file.filename);
+    Jimp.read(req.file.path)
+      .then((file) => {
+        return file.resize(200, 200).quality(60).write(newPath);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
+    await fs.rename(req.file.path, newPath);
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatarURL: avaURL },
+      { new: true }
+    );
+    if (user) {
+      res.status(200).json({
+        avatarURL: user.avatarURL,
+      });
+    } else {
+      return res.status(404).json("Not found");
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+// planned
+
 // export async function updAvatar(req, res, next) {
 //   cloudinary.config({
 //     cloud_name: process.env.CLOUD_NAME,
@@ -84,36 +121,3 @@ export const updDataUser = async (req, res) => {
 //     res.status(500).json({ message: error.message });
 //   }
 // }
-
-export async function updAvatar(req, res, next) {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "You must add a file" });
-    }
-    const newPath = path.resolve("public", "avatars", req.file.filename);
-    const avaURL = path.join("avatars", req.file.filename);
-    Jimp.read(req.file.path)
-      .then((file) => {
-        return file.resize(200, 200).quality(60).write(newPath);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-
-    await fs.rename(req.file.path, newPath);
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { avatarURL: avaURL },
-      { new: true }
-    );
-    if (user) {
-      res.status(200).json({
-        avatarURL: user.avatarURL,
-      });
-    } else {
-      return res.status(404).json("Not found");
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-}
