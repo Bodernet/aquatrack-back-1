@@ -97,25 +97,21 @@ export async function updAvatar(req, res, next) {
     unique_filename: true,
     overwrite: false,
     transformation: [
-      { width: 200, height: 200, gravity: "faces", crop: "thumb" },
+      { width: 250, height: 250, gravity: "faces", crop: "thumb" },
       { radius: "max" },
     ],
   };
-
   try {
     if (!req.file) {
       return res.status(400).json({ message: "You must add a file" });
     }
-
     const result = await cloudinary.uploader.upload(req.file.path, options);
     await fs.unlink(req.file.path);
-
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { avatarURL: result.secure_url },
       { new: true }
     );
-
     if (user) {
       res.status(200).json({
         avatarURL: user.avatarURL,
@@ -124,7 +120,6 @@ export async function updAvatar(req, res, next) {
       return res.status(404).json("User not found");
     }
   } catch (error) {
-    console.error("Error updating avatar:", error);
     res.status(500).json({ message: error.message });
   }
 }
