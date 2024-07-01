@@ -38,7 +38,6 @@ export const updDataUser = async (req, res) => {
         weight: user.weight,
         activeTimeSports: user.activeTimeSports,
         waterDrink: user.waterDrink,
-        avatarURL: user.avatarURL,
         verify: user.verify,
       },
     });
