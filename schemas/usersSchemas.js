@@ -51,10 +51,10 @@ export const verifySchema = (req, res, next) => {
 export const updateUserSchema = Joi.object({
   email: Joi.string().email().optional(),
   name: Joi.string().trim().allow(null, "").optional(),
-  gender: Joi.string().valid("Woman", "Man").optional(),
+  gender: Joi.string().valid("woman", "man").optional(),
   weight: Joi.number().default(0).optional(),
   activeTimeSports: Joi.number().default(0).optional(),
-  waterDrink: Joi.number().default(1.8).optional(),
+  waterDrink: Joi.number().optional(),
 });
 
 export const updDataUserSchema = (req, res, next) => {
@@ -78,6 +78,9 @@ export const updDataUserSchema = (req, res, next) => {
     waterDrink: {
       type: Number,
       // default: 1.8,
+      avatarURL: {
+        type: string,
+      },
     },
   });
   const { error } = schema.validate(req.body);
