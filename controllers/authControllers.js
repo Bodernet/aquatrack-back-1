@@ -289,7 +289,7 @@ export const googleRedirect = async (req, res, next) => {
     const redirectUrl = `${process.env.FRONTEND_URL}/signin`;
     res
       .cookie("refreshToken", refreshToken, cookieConfig)
-      .redirect(`${process.env.FRONTEND_URL}/tracker?token=${token}`);
+      .redirect(redirectUrl);
   } catch (error) {
     next(error);
   }
