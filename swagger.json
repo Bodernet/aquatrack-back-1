@@ -274,10 +274,10 @@
         "summary": "User's avatar",
         "security": [{ "Bearer": [] }],
         "requestBody": {
-          "description": "Object to add  avatar",
+          "description": "Object to add avatar",
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/AvatarUpdateRequest"
               }
@@ -765,8 +765,9 @@
       "AvatarUpdateRequest": {
         "type": "object",
         "properties": {
-          "avatarURL": {
-            "$ref": "#/components/examples/users/avatarURL"
+          "avatar": {
+            "type": "file",
+            "format": "binary"
           }
         }
       },
