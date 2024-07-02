@@ -34,12 +34,12 @@ userRouter.get("/verify/:verificationToken", verifyEmail);
 userRouter.post("/verify", verifySchema, resendVerificationEmail);
 userRouter.get("/count", countUsers);
 
-userRouter.post("/password/new", newPasswordSchema, newPassword); // Надсилає новий пароль на пошту
-userRouter.post("/password/custom", authMiddleware, customPassword); // переводить на сторінку оновлення пароля та дає тимчасовий токен
+userRouter.post("/password/new", newPasswordSchema, newPassword);
+userRouter.post("/password/custom", authMiddleware, customPassword);
 userRouter.post(
   "/password/custom/update",
   authPasswordMiddleware,
-  updateCustomPassword // оновлює пароль
+  updateCustomPassword
 );
 
 userRouter.get("/google", googleAuth);

@@ -19,8 +19,6 @@ const cookieConfig = {
   secure: true,
 };
 
-// done
-
 export async function countUsers(req, res, next) {
   try {
     const totalCount = await User.countDocuments();
@@ -162,12 +160,10 @@ export async function logout(req, res, next) {
 export async function current(req, res, next) {
   try {
     const user = await User.findById(req.user.id.toString());
-    // const { token } = await User.findById(req.user.id.toString());
     if (!user) {
       return res.status(401).send("Not authorized");
     }
     res.status(200).json({
-      // token,
       user: {
         id: user._id,
         name: user.name,
@@ -177,15 +173,12 @@ export async function current(req, res, next) {
         activeTimeSports: user.activeTimeSports,
         waterDrink: user.waterDrink,
         avatarURL: user.avatarURL,
-        // verify: user.verify,
       },
     });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 }
-
-// in progres
 
 export const googleAuth = async (req, res, next) => {
   try {
