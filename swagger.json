@@ -26,6 +26,27 @@
     }
   ],
   "paths": {
+    "/users/count": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user count and sample avatars",
+        "responses": {
+          "200": {
+            "description": "Successful retrieval of user count and avatars",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/users/register": {
       "post": {
         "tags": ["Users"],
@@ -253,10 +274,10 @@
         "summary": "User's avatar",
         "security": [{ "Bearer": [] }],
         "requestBody": {
-          "description": "Object to add  avatar",
+          "description": "Object to add avatar",
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/AvatarUpdateRequest"
               }
@@ -495,6 +516,18 @@
   },
   "components": {
     "schemas": {
+      "CountResponse": {
+        "type": "object",
+        "properties": {
+          "userCount": {
+            "type": "integer",
+            "description": "Total number of users"
+          }
+        },
+        "example": {
+          "userCount": 100
+        }
+      },
       "SignUpRequest": {
         "type": "object",
         "required": ["email", "password"],
@@ -614,10 +647,6 @@
       "GetCurrentResponse": {
         "type": "object",
         "properties": {
-          "token": {
-            "type": "string",
-            "description": "JWT token for authentication"
-          },
           "user": {
             "type": "object",
             "properties": {
@@ -653,16 +682,11 @@
               "avatarURL": {
                 "$ref": "#/components/examples/users/avatarURL",
                 "description": "URL to user's avatar image"
-              },
-              "verify": {
-                "type": "boolean",
-                "description": "User's verification status (true/false)"
               }
             }
           }
         },
         "example": {
-          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTIzNDU2Nzg5IiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
           "user": {
             "id": "123456789",
             "name": "John Doe",
@@ -671,8 +695,7 @@
             "weight": 70,
             "activeTimeSports": 5,
             "waterDrink": 2,
-            "avatarURL": "//www.gravatar.com/avatar/c951f1265ed645cea2c372ecd9672f5f",
-            "verify": true
+            "avatarURL": "//www.gravatar.com/avatar/c951f1265ed645cea2c372ecd9672f5f"
           }
         }
       },
@@ -704,9 +727,6 @@
           },
           "activeTimeSports": {
             "$ref": "#/components/examples/users/activeTimeSports"
-          },
-          "avatarURL": {
-            "$ref": "#/components/examples/users/avatarURL"
           }
         }
       },
@@ -715,9 +735,10 @@
         "properties": {
           "message": {
             "type": "string",
-            "description": "Message indicating the update status"
+            "description": "Message indicating the update status",
+            "example": "User successfully updated"
           },
-          "value": {
+          "user": {
             "type": "object",
             "properties": {
               "name": {
@@ -737,9 +758,6 @@
               },
               "activeTimeSports": {
                 "$ref": "#/components/examples/users/activeTimeSports"
-              },
-              "avatarURL": {
-                "$ref": "#/components/schemas/AvatarUpdateResponse"
               }
             }
           }
@@ -748,8 +766,9 @@
       "AvatarUpdateRequest": {
         "type": "object",
         "properties": {
-          "avatarURL": {
-            "$ref": "#/components/examples/users/avatarURL"
+          "avatar": {
+            "type": "file",
+            "format": "binary"
           }
         }
       },
@@ -857,28 +876,31 @@
         }
       },
       "GetDailyWaterResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Entry ID",
-            "example": "64b1e25f6b0a2ccb95591ec7"
-          },
-          "date": {
-            "type": "string",
-            "format": "date",
-            "description": "Entry date",
-            "example": "2024-06-28T21:13:05.333+00:00"
-          },
-          "volume": {
-            "type": "number",
-            "description": "Volume of water in liters",
-            "example": 1.5
-          },
-          "user": {
-            "type": "string",
-            "description": "User ID",
-            "example": "64b1e25f6b0a2ccb95591ec7"
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Entry ID",
+              "example": "64b1e25f6b0a2ccb95591ec7"
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "description": "Entry date",
+              "example": "2024-06-28T21:13:05.333+00:00"
+            },
+            "volume": {
+              "type": "number",
+              "description": "Volume of water in liters",
+              "example": 1.5
+            },
+            "user": {
+              "type": "string",
+              "description": "User ID",
+              "example": "64b1e25f6b0a2ccb95591ec7"
+            }
           }
         }
       },
@@ -934,16 +956,6 @@
           "description": "User's token",
           "example": "Abcd1234"
         },
-        "refreshToken": {
-          "type": "string",
-          "description": "User's token",
-          "example": "Abcd1234"
-        },
-        "userId": {
-          "type": "string",
-          "description": "User's id",
-          "example": "64b1e25f6b0a2ccb95591ec7"
-        },
         "name": {
           "type": "string",
           "description": "User's name",
@@ -957,7 +969,7 @@
         "gender": {
           "type": "string",
           "description": "User's gender",
-          "example": "Woman"
+          "example": "woman"
         },
         "weight": {
           "type": "number",
@@ -983,11 +995,6 @@
           "type": "string",
           "description": "Verifying success",
           "example": "Verifying success"
-        },
-        "verify": {
-          "type": "boolean",
-          "description": "User's verifying",
-          "example": true
         }
       }
     },
