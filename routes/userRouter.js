@@ -42,9 +42,8 @@ userRouter.post(
   updateCustomPassword // оновлює пароль
 );
 
-userRouter.get('/google', googleAuth);
-userRouter.get('/google-redirect', googleRedirect);
-
+userRouter.get("/google", googleAuth);
+userRouter.get("/google-redirect", googleRedirect);
 
 userRouter.patch(
   "/update",
