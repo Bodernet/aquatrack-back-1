@@ -61,7 +61,6 @@ export const updDataUserSchema = (req, res, next) => {
   const schema = Joi.object({
     name: {
       type: String,
-      // default: "User",
     },
     gender: {
       type: String,
@@ -69,11 +68,9 @@ export const updDataUserSchema = (req, res, next) => {
     },
     weight: {
       type: Number,
-      // default: 0,
     },
     activeTimeSports: {
       type: Number,
-      // default: 0,
     },
     waterDrink: {
       type: Number,
@@ -134,7 +131,6 @@ const userSchema = new mongoose.Schema(
     },
     avatarURL: {
       type: String,
-      // default: null,
     },
     googleId: {
       type: String,
@@ -146,7 +142,6 @@ const userSchema = new mongoose.Schema(
     },
     verificationToken: {
       type: String,
-      // required: [true, "Verify token is required"],
     },
     displayName: {
       type: String,
