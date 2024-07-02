@@ -735,7 +735,8 @@
         "properties": {
           "message": {
             "type": "string",
-            "description": "Message indicating the update status"
+            "description": "Message indicating the update status",
+            "example": "User successfully updated"
           },
           "user": {
             "type": "object",
@@ -875,28 +876,31 @@
         }
       },
       "GetDailyWaterResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Entry ID",
-            "example": "64b1e25f6b0a2ccb95591ec7"
-          },
-          "date": {
-            "type": "string",
-            "format": "date",
-            "description": "Entry date",
-            "example": "2024-06-28T21:13:05.333+00:00"
-          },
-          "volume": {
-            "type": "number",
-            "description": "Volume of water in liters",
-            "example": 1.5
-          },
-          "user": {
-            "type": "string",
-            "description": "User ID",
-            "example": "64b1e25f6b0a2ccb95591ec7"
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Entry ID",
+              "example": "64b1e25f6b0a2ccb95591ec7"
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "description": "Entry date",
+              "example": "2024-06-28T21:13:05.333+00:00"
+            },
+            "volume": {
+              "type": "number",
+              "description": "Volume of water in liters",
+              "example": 1.5
+            },
+            "user": {
+              "type": "string",
+              "description": "User ID",
+              "example": "64b1e25f6b0a2ccb95591ec7"
+            }
           }
         }
       },
