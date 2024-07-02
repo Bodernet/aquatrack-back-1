@@ -182,7 +182,7 @@ export async function current(req, res, next) {
       return res.status(401).send("Not authorized");
     }
     res.status(200).json({
-      token,
+      // token,
       user: {
         id: user._id,
         name: user.name,
@@ -192,7 +192,7 @@ export async function current(req, res, next) {
         activeTimeSports: user.activeTimeSports,
         waterDrink: user.waterDrink,
         avatarURL: user.avatarURL,
-        verify: user.verify,
+        // verify: user.verify,
       },
     });
   } catch (error) {
