@@ -21,6 +21,17 @@ const cookieConfig = {
 
 // done
 
+export async function countUsers(req, res, next) {
+  try {
+    const totalCount = await User.countDocuments();
+    res.json({
+      userCount: totalCount,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function register(req, res, next) {
   try {
     const { password, email } = req.body;
@@ -71,6 +82,31 @@ export async function register(req, res, next) {
   }
 }
 
+export async function verifyEmail(req, res, next) {
+  try {
+    const { verificationToken } = req.params;
+    const user = await User.findOne({ verificationToken });
+    if (!user) {
+      return res.status(404).json("User not found");
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      { $set: { verify: true, verificationToken: null } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(500).json("Failed to update user");
+    }
+
+    const redirectUrl = `${process.env.FRONTEND_URL}/signin`;
+
+    res.redirect(redirectUrl);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
 export async function login(req, res, next) {
   try {
     const { email, password } = req.body;
@@ -107,7 +143,6 @@ export async function login(req, res, next) {
         activeTimeSports: user.activeTimeSports,
         waterDrink: user.waterDrink,
         avatarURL: user.avatarURL,
-        verify: user.verify,
       },
     });
   } catch (error) {
@@ -124,60 +159,10 @@ export async function logout(req, res, next) {
   }
 }
 
-export async function verifyEmail(req, res, next) {
-  try {
-    const { verificationToken } = req.params;
-    const user = await User.findOne({ verificationToken });
-    if (!user) {
-      return res.status(404).json("User not found");
-    }
-    // const token = jwt.sign(
-    //   { id: user._id, email: user.email },
-    //   process.env.JWT_SECRET,
-    //   { expiresIn: "24h" }
-    // );
-    const updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      // { $set: { token, verify: true, verificationToken: null } },
-      { $set: { verify: true, verificationToken: null } },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(500).json("Failed to update user");
-    }
-
-    const redirectUrl = `${process.env.FRONTEND_URL}/signin`;
-
-    // const redirectUrl =
-    //   `http://localhost:5173/tracker?token=${token}` ||
-    //   `https://aquatrack-front-1.vercel.api/tracker?token=${token}`;
-    res.redirect(redirectUrl);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-}
-
-export async function countUsers(req, res, next) {
-  try {
-    const totalCount = await User.countDocuments();
-    const users = await User.aggregate([
-      { $sample: { size: 3 } },
-      { $project: { avatarURL: 1, _id: 0 } },
-    ]);
-    res.json({
-      userCount: totalCount,
-      userAvatars: users,
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
 export async function current(req, res, next) {
   try {
     const user = await User.findById(req.user.id.toString());
-    const { token } = await User.findById(req.user.id.toString());
+    // const { token } = await User.findById(req.user.id.toString());
     if (!user) {
       return res.status(401).send("Not authorized");
     }
