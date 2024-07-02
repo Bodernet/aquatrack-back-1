@@ -143,7 +143,6 @@ export async function login(req, res, next) {
         activeTimeSports: user.activeTimeSports,
         waterDrink: user.waterDrink,
         avatarURL: user.avatarURL,
-        verify: user.verify,
       },
     });
   } catch (error) {
