@@ -54,7 +54,7 @@ export const updateUserSchema = Joi.object({
   gender: Joi.string().valid("woman", "man").optional(),
   weight: Joi.number().default(0).optional(),
   activeTimeSports: Joi.number().default(0).optional(),
-  waterDrink: Joi.number().optional(),
+  waterDrink: Joi.number().default(1.8).optional(),
 });
 
 export const updDataUserSchema = (req, res, next) => {
