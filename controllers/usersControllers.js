@@ -1,5 +1,5 @@
 import "dotenv/config";
-
+import multer from "multer";
 import fs from "fs/promises";
 import { User } from "../schemas/usersSchemas.js";
 import { updateUserSchema } from "../schemas/usersSchemas.js";

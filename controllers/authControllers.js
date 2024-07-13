@@ -59,7 +59,18 @@ export async function register(req, res, next) {
       to: email,
       from: "aanytkaa@gmail.com",
       subject: "Welcome to Agua track",
-      html: `To confirm you email please click on <a href="${verificationLink}">Link</a>`,
+      html: `
+      <html>
+      <body style="max-width: 400px; max-height: 300px">
+        <div style="background-color: #f0eff4; padding: 10px; border-radius: 10px; text-align: center;">
+          <h2 style="background-color: #4CAF50; color: #323f47; padding: 10px; border-radius: 5px;">Verify your Email</h2>
+          <p style="color: #2f2f2f;">Thank you for registering with AquaTrack!</p>
+          <p style="color: #2f2f2f;">Please click the button below to verify your email address:</p>
+          <a href="${verificationLink}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #323f47; background-color: #4CAF50; text-decoration: none; border-radius: 5px;">Verify Email</a>
+        </div>
+      </body>
+      </html>
+    `,
     };
     sgMail
       .send(msg)
@@ -298,8 +309,18 @@ export async function resendVerificationEmail(req, res, next) {
       to: email,
       from: "aanytkaa@gmail.com",
       subject: "Welcome to Agua track",
-      html: `To confirm you email please click on <a href="${verificationLink}">Link</a>`,
-      text: `To confirm you email please open the link ${verificationLink}`,
+      html: `
+      <html>
+      <body style="max-width: 400px; max-height: 300px">
+        <div style="background-color: #f0eff4; padding: 10px; border-radius: 10px; text-align: center;">
+          <h2 style="background-color: #4CAF50; color: #323f47; padding: 10px; border-radius: 5px;">Verify your Email</h2>
+          <p style="color: #2f2f2f;">Thank you for registering with AquaTrack!</p>
+          <p style="color: #2f2f2f;">Please click the button below to verify your email address:</p>
+          <a href="${verificationLink}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #323f47; background-color: #4CAF50; text-decoration: none; border-radius: 5px;">Verify Email</a>
+        </div>
+      </body>
+      </html>
+    `,
     };
     sgMail
       .send(msg)
@@ -333,9 +354,18 @@ export async function newPassword(req, res, next) {
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
-      subject: "Welcome to Agua track",
-      html: `Congratulations, you have received a new password: ${password}`,
-      text: `Congratulations, you have received a new password: ${password}`,
+      subject: "Your password to AguaTrack",
+      html: `
+  <html>
+  <body style="max-width: 400px; max-height: 300px">
+    <div style="background-color: #f0eff4; padding: 10px; border-radius: 10px; text-align: center;">
+      <h2 style="background-color: #4CAF50; color: #323f47; padding: 10px; border-radius: 5px;">Your password has been changed!</h2>
+      <p style="color: #2f2f2f;">Congratulations! You have successfully updated your AquaTrack password! Your new password:</p>
+      <h3 style="background-color: #4CAF50; color: #323f47; padding: 10px; border-radius: 5px; text-align: center; margin: 0 auto; width: 120px;">${password}</h3>
+    </div>
+  </body>
+  </html>
+`,
     };
 
     sgMail
@@ -373,12 +403,23 @@ export async function customPassword(req, res, next) {
       { tmpToken: token },
       { new: true }
     );
+    const updateLink = `${BASE_URL}/password?token=${token}`;
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
-      subject: "Welcome to Agua track",
-      html: `<a href="https://aquatrack-front-1.vercel.app/password?token=${token}">Link</a>`,
-      text: `<a href="https://aquatrack-front-1.vercel.app/password?token=${token}">Link</a>`,
+      subject: "Password change request in AquaTrack",
+      html: `
+      <html>
+      <body style="max-width: 400px; max-height: 300px">
+        <div style="background-color: #f0eff4; padding: 10px; border-radius: 10px; text-align: center;">
+          <h2 style="background-color: #4CAF50; color: #323f47; padding: 10px; border-radius: 5px;">Change your password in the AquaTrack application</h2>
+          <p style="color: #2f2f2f;">You have sent a password change request for AquaTrack.</p>
+          <p style="color: #2f2f2f;">Please click the button below to continue changing your password:</p>
+          <a href="${updateLink}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #323f47; background-color: #4CAF50; text-decoration: none; border-radius: 5px;">Change password</a>
+        </div>
+      </body>
+      </html>
+    `,
     };
     sgMail
       .send(msg)
