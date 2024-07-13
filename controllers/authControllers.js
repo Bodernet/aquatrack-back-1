@@ -59,16 +59,17 @@ export async function register(req, res, next) {
 
     
     // const templatePath = path.join(__dirname, 'mailLetters', 'verificationLetter.ejs');
-    // // const templatePath = path.join(process.cwd(), 'mailLetters', 'verificationLetter.ejs');
+    const templatePath = path.join(process.cwd(), 'mailLetters', 'verificationLetter.ejs');
 
     
-    // const emailContent = await ejs.renderFile(templatePath, { verifyLink: verificationLink });
+    const emailContent = await ejs.renderFile(templatePath, { verifyLink: verificationLink });
 
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
       subject: "Welcome to Agua track",
-      html: `To confirm you email please click on <a href="${verificationLink}">Link</a>`,
+      // html: `To confirm you email please click on <a href="${verificationLink}">Link</a>`,
+      html: emailContent,
       text: `To confirm you email please open the link ${verificationLink}`,
       // html: emailContent,
     };
