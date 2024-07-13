@@ -7,6 +7,8 @@ import generator from "generate-password";
 import * as tokenServices from "../services/tokenServices.js";
 import axios from "axios";
 import queryString from "query-string";
+import path from 'path'; // Додано для роботи з шляхами до файлів
+import ejs from 'ejs'; // Додано для рендерингу шаблонів EJS
 
 import sgMail from "@sendgrid/mail";
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -55,11 +57,20 @@ export async function register(req, res, next) {
       verificationToken,
     });
 
+    
+    // const templatePath = path.join(__dirname, 'mailLetters', 'verificationLetter.ejs');
+    // // const templatePath = path.join(process.cwd(), 'mailLetters', 'verificationLetter.ejs');
+
+    
+    // const emailContent = await ejs.renderFile(templatePath, { verifyLink: verificationLink });
+
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
       subject: "Welcome to Agua track",
       html: `To confirm you email please click on <a href="${verificationLink}">Link</a>`,
+      text: `To confirm you email please open the link ${verificationLink}`,
+      // html: emailContent,
     };
     sgMail
       .send(msg)

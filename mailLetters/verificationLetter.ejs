@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Verification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #ffffff;
+        color: #323f47;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #e6e6e6;
+        border: 1px solid #87d28d;
+        border-radius: 8px;
+      }
+      .header {
+        text-align: center;
+        padding: 10px 0;
+        background-color: #9be1a0;
+        color: #ffffff;
+        border-radius: 8px 8px 0 0;
+      }
+      .content {
+        font-size: 16px;
+        text-align: center;
+        padding: 20px;
+      }
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-top: 20px;
+        background-color: #87d28d;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Verify Your Email</h1>
+      </div>
+      <div class="content">
+        <p>Thank you for registering with AquaTrack!</p>
+        <p>Please click the button below to verify your email address:</p>
+        <a href="<%= verifyLink %>" class="button">Verify Email</a>
+      </div>
+    </div>
+  </body>
+</html>
