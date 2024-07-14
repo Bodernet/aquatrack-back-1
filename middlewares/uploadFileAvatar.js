@@ -15,4 +15,16 @@ const storage = multer.diskStorage({
   },
 });
 
-export default multer({ storage });
+const fileFilter = (req, file, cb) => {
+  const filetypes = /jpeg|jpg|png/;
+  const mimetype = filetypes.test(file.mimetype);
+  const extname = filetypes.test(
+    file.originalname.split(".").pop().toLowerCase()
+  );
+  if (mimetype && extname) {
+    return cb(null, true);
+  }
+  cb(new Error("File type not allowed"));
+};
+
+export default multer({ storage, fileFilter });
