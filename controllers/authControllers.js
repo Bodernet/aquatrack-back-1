@@ -60,8 +60,6 @@ export async function register(req, res, next) {
     
     // const templatePath = path.join(__dirname, 'mailLetters', 'verificationLetter.ejs');
     const templatePath = path.join(process.cwd(), 'mailLetters', 'verificationLetter.ejs');
-
-    
     const emailContent = await ejs.renderFile(templatePath, { verifyLink: verificationLink });
 
     const msg = {
