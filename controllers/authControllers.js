@@ -402,7 +402,7 @@ export async function customPassword(req, res, next) {
       { tmpToken: token },
       { new: true }
     );
-    const updateLink = `${BASE_URL}/password?token=${token}`;
+    const updateLink = `${process.env.FRONTEND_URL}/password-change?token=${token}`;
     const msg = {
       to: email,
       from: "aanytkaa@gmail.com",
@@ -415,7 +415,8 @@ export async function customPassword(req, res, next) {
           <p style="color: #2f2f2f;">You have sent a password change request for AquaTrack.</p>
           <p style="color: #2f2f2f;">Please click the button below to continue changing your password:</p>
           <a href="${updateLink}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #323f47; background-color: #4CAF50; text-decoration: none; border-radius: 5px;">Change password</a>
-        </div>
+         <p style="color: #2f2f2f;">If you have not sent a request, please ignore the message.</p>
+          </div>
       </body>
       </html>
     `,

@@ -35,7 +35,7 @@ userRouter.post("/verify", verifySchema, resendVerificationEmail);
 userRouter.get("/count", countUsers);
 
 userRouter.post("/password/new", newPasswordSchema, newPassword);
-userRouter.post("/password/custom", authMiddleware, customPassword);
+userRouter.post("/password/custom", newPasswordSchema, customPassword);
 userRouter.post(
   "/password/custom/update",
   authPasswordMiddleware,
